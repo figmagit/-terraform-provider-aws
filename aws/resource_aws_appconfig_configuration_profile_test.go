@@ -70,7 +70,7 @@ func TestAccAWSAppConfigConfigurationProfile_LocationURIs(t *testing.T) {
 	appName := acctest.RandomWithPrefix("tf-acc-test")
 	rName := acctest.RandomWithPrefix("tf-acc-test")
 	resourceName := "aws_appconfig_configuration_profile.test"
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckAppConfigConfigurationProfileDestroy,
@@ -82,6 +82,7 @@ func TestAccAWSAppConfigConfigurationProfile_LocationURIs(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "name", rName),
 					testAccCheckAWSAppConfigConfigurationProfileARN(resourceName, &profile),
 					resource.TestCheckResourceAttrSet(resourceName, "location_uri"),
+					resource.TestCheckResourceAttrSet(resourceName, "retrieval_role_arn"),
 				),
 			},
 			{
@@ -91,6 +92,7 @@ func TestAccAWSAppConfigConfigurationProfile_LocationURIs(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "name", rName),
 					testAccCheckAWSAppConfigConfigurationProfileARN(resourceName, &profile),
 					resource.TestCheckResourceAttrSet(resourceName, "location_uri"),
+					resource.TestCheckResourceAttrSet(resourceName, "retrieval_role_arn"),
 				),
 			},
 		},
@@ -102,7 +104,7 @@ func TestAccAWSAppConfigConfigurationProfile_Validators(t *testing.T) {
 	appName := acctest.RandomWithPrefix("tf-acc-test")
 	rName := acctest.RandomWithPrefix("tf-acc-test")
 	resourceName := "aws_appconfig_configuration_profile.test"
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckAppConfigConfigurationProfileDestroy,
@@ -126,7 +128,7 @@ func TestAccAWSAppConfigConfigurationProfile_RetrievalARN(t *testing.T) {
 	rName := acctest.RandomWithPrefix("tf-acc-test")
 
 	resourceName := "aws_appconfig_configuration_profile.test"
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckAppConfigConfigurationProfileDestroy,
@@ -137,7 +139,7 @@ func TestAccAWSAppConfigConfigurationProfile_RetrievalARN(t *testing.T) {
 					testAccCheckAwsAppConfigConfigurationProfileExists(resourceName, &profile),
 					resource.TestCheckResourceAttr(resourceName, "name", rName),
 					testAccCheckAWSAppConfigConfigurationProfileARN(resourceName, &profile),
-					resource.TestCheckResourceAttr(resourceName, "tags.%", "0"),
+					resource.TestCheckResourceAttrSet(resourceName, "retrieval_role_arn"),
 				),
 			},
 		},
@@ -288,6 +290,23 @@ func testAccAWSAppConfigConfigurationProfileLocationSSMParameter(appName, rName 
 resource "aws_appconfig_application" "app" {
 	name = %[1]q
 }
+resource "aws_iam_role" "test_role" {
+	name = "test_role"
+  
+	assume_role_policy = jsonencode({
+	  Version = "2012-10-17"
+	  Statement = [
+		{
+		  Action = "sts:AssumeRole"
+		  Effect = "Allow"
+		  Sid    = ""
+		  Principal = {
+			Service = "ec2.amazonaws.com"
+		  }
+		},
+	  ]
+	}) 
+}
 resource "aws_ssm_parameter" "ssm_param" {
 	name  = "foo"
 	type  = "String"
@@ -297,6 +316,7 @@ resource "aws_appconfig_configuration_profile" "test" {
   name = %[2]q
   application_id = aws_appconfig_application.app.id
   location_uri = aws_ssm_parameter.ssm_param.arn
+  retrieval_role_arn = aws_iam_role.test_role.arn
 }
 `, appName, rName)
 }
@@ -305,6 +325,23 @@ func testAccAWSAppConfigConfigurationProfileLocationSSMDocument(appName, rName s
 	return fmt.Sprintf(`
 resource "aws_appconfig_application" "app" {
 	name = %[1]q
+}
+resource "aws_iam_role" "test_role" {
+	name = "test_role"
+  
+	assume_role_policy = jsonencode({
+	  Version = "2012-10-17"
+	  Statement = [
+		{
+		  Action = "sts:AssumeRole"
+		  Effect = "Allow"
+		  Sid    = ""
+		  Principal = {
+			Service = "ec2.amazonaws.com"
+		  }
+		},
+	  ]
+	}) 
 }
 resource "aws_ssm_document" "ssm_doc" {
 	name          = "test_document"
@@ -334,6 +371,7 @@ resource "aws_appconfig_configuration_profile" "test" {
   name = %[2]q
   application_id = aws_appconfig_application.app.id
   location_uri = aws_ssm_document.ssm_doc.arn
+  retrieval_role_arn = aws_iam_role.test_role.arn
 }
 `, appName, rName)
 }
