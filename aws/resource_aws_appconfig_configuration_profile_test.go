@@ -14,28 +14,28 @@ import (
 func TestAccAwsAppConfigConfigurationProfile_basic(t *testing.T) {
 	var profile appconfig.GetConfigurationProfileOutput
 
+	appName := acctest.RandomWithPrefix("tf-acc-test")
 	rName := acctest.RandomWithPrefix("tf-acc-test")
 	rDesc := acctest.RandomWithPrefix("tf-acc-test")
 	resourceName := "aws_appconfig_configuration_profile.test"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckAppConfigApplicationDestroy,
+		CheckDestroy: testAccCheckAppConfigConfigurationProfileDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccAWSAppConfigConfigurationProfileName(rName, rDesc),
+				Config: testAccAWSAppConfigConfigurationProfileName(appName, rName, rDesc),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAwsAppConfigConfigurationProfileExists(resourceName, &profile),
 					resource.TestCheckResourceAttr(resourceName, "name", rName),
-					testAccCheckResourceAttrRegionalARN(resourceName, "arn", "appconfig", fmt.Sprintf("application/%s", rName)),
+					testAccCheckAWSAppConfigConfigurationProfileARN(resourceName, &profile),
 					resource.TestCheckResourceAttr(resourceName, "tags.%", "0"),
-					resource.TestCheckResourceAttr(resourceName, "description", ""),
+					resource.TestCheckResourceAttr(resourceName, "description", rDesc),
+					resource.TestCheckResourceAttr(resourceName, "location_uri", "hosted"),
+					resource.TestCheckResourceAttr(resourceName, "retrieval_role_arn", ""),
+					resource.TestCheckResourceAttr(resourceName, "validator.%", "0"),
+					resource.TestCheckResourceAttrSet(resourceName, "application_id"),
 				),
-			},
-			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
 			},
 		},
 	})
@@ -44,6 +44,7 @@ func TestAccAwsAppConfigConfigurationProfile_basic(t *testing.T) {
 func TestAccAwsAppConfigConfigurationProfile_disappears(t *testing.T) {
 	var profile appconfig.GetConfigurationProfileOutput
 
+	appName := acctest.RandomWithPrefix("tf-acc-test")
 	rName := acctest.RandomWithPrefix("tf-acc-test")
 	rDesc := acctest.RandomWithPrefix("tf-acc-test")
 	resourceName := "aws_appconfig_configuration_profile.test"
@@ -51,10 +52,10 @@ func TestAccAwsAppConfigConfigurationProfile_disappears(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckAppConfigApplicationDestroy,
+		CheckDestroy: testAccCheckAppConfigConfigurationProfileDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccAWSAppConfigConfigurationProfileName(rName, rDesc),
+				Config: testAccAWSAppConfigConfigurationProfileName(appName, rName, rDesc),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAwsAppConfigConfigurationProfileExists(resourceName, &profile),
 					testAccCheckAwsAppConfigConfigurationProfileDisappears(&profile),
@@ -64,20 +65,99 @@ func TestAccAwsAppConfigConfigurationProfile_disappears(t *testing.T) {
 		},
 	})
 }
+func TestAccAWSAppConfigConfigurationProfile_LocationURIs(t *testing.T) {
+	var profile appconfig.GetConfigurationProfileOutput
+	appName := acctest.RandomWithPrefix("tf-acc-test")
+	rName := acctest.RandomWithPrefix("tf-acc-test")
+	resourceName := "aws_appconfig_configuration_profile.test"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckAppConfigConfigurationProfileDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccAWSAppConfigConfigurationProfileLocationSSMParameter(appName, rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckAwsAppConfigConfigurationProfileExists(resourceName, &profile),
+					resource.TestCheckResourceAttr(resourceName, "name", rName),
+					testAccCheckAWSAppConfigConfigurationProfileARN(resourceName, &profile),
+					resource.TestCheckResourceAttrSet(resourceName, "location_uri"),
+				),
+			},
+			{
+				Config: testAccAWSAppConfigConfigurationProfileLocationSSMDocument(appName, rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckAwsAppConfigConfigurationProfileExists(resourceName, &profile),
+					resource.TestCheckResourceAttr(resourceName, "name", rName),
+					testAccCheckAWSAppConfigConfigurationProfileARN(resourceName, &profile),
+					resource.TestCheckResourceAttrSet(resourceName, "location_uri"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccAWSAppConfigConfigurationProfile_Validators(t *testing.T) {
+	var profile appconfig.GetConfigurationProfileOutput
+	appName := acctest.RandomWithPrefix("tf-acc-test")
+	rName := acctest.RandomWithPrefix("tf-acc-test")
+	resourceName := "aws_appconfig_configuration_profile.test"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckAppConfigConfigurationProfileDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccAWSAppConfigConfigurationProfileValidator(appName, rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckAwsAppConfigConfigurationProfileExists(resourceName, &profile),
+					resource.TestCheckResourceAttr(resourceName, "name", rName),
+					testAccCheckAWSAppConfigConfigurationProfileARN(resourceName, &profile),
+					resource.TestCheckResourceAttr(resourceName, "tags.%", "0"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccAWSAppConfigConfigurationProfile_RetrievalARN(t *testing.T) {
+	var profile appconfig.GetConfigurationProfileOutput
+	appName := acctest.RandomWithPrefix("tf-acc-test")
+	rName := acctest.RandomWithPrefix("tf-acc-test")
+
+	resourceName := "aws_appconfig_configuration_profile.test"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckAppConfigConfigurationProfileDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccAWSAppConfigConfigurationProfileRetreivalARN(appName, rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckAwsAppConfigConfigurationProfileExists(resourceName, &profile),
+					resource.TestCheckResourceAttr(resourceName, "name", rName),
+					testAccCheckAWSAppConfigConfigurationProfileARN(resourceName, &profile),
+					resource.TestCheckResourceAttr(resourceName, "tags.%", "0"),
+				),
+			},
+		},
+	})
+}
 
 func TestAccAwsAppConfigConfigurationProfile_Tags(t *testing.T) {
 	var profile appconfig.GetConfigurationProfileOutput
 
+	appName := acctest.RandomWithPrefix("tf-acc-test")
 	rName := acctest.RandomWithPrefix("tf-acc-test")
 	resourceName := "aws_appconfig_configuration_profile.test"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckAppConfigApplicationDestroy,
+		CheckDestroy: testAccCheckAppConfigConfigurationProfileDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccAWSAppConfigConfigurationProfileTags1(rName, "key1", "value1"),
+				Config: testAccAWSAppConfigConfigurationProfileTags1(appName, rName, "key1", "value1"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAwsAppConfigConfigurationProfileExists(resourceName, &profile),
 					resource.TestCheckResourceAttr(resourceName, "tags.%", "1"),
@@ -85,12 +165,7 @@ func TestAccAwsAppConfigConfigurationProfile_Tags(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-			{
-				Config: testAccAWSAppConfigConfigurationProfileTags2(rName, "key1", "value1updated", "key2", "value2"),
+				Config: testAccAWSAppConfigConfigurationProfileTags2(appName, rName, "key1", "value1updated", "key2", "value2"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAwsAppConfigConfigurationProfileExists(resourceName, &profile),
 					resource.TestCheckResourceAttr(resourceName, "tags.%", "2"),
@@ -99,7 +174,7 @@ func TestAccAwsAppConfigConfigurationProfile_Tags(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccAWSAppConfigConfigurationProfileTags1(rName, "key2", "value2"),
+				Config: testAccAWSAppConfigConfigurationProfileTags1(appName, rName, "key2", "value2"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAwsAppConfigConfigurationProfileExists(resourceName, &profile),
 					resource.TestCheckResourceAttr(resourceName, "tags.%", "1"),
@@ -108,6 +183,13 @@ func TestAccAwsAppConfigConfigurationProfile_Tags(t *testing.T) {
 			},
 		},
 	})
+}
+
+func testAccCheckAWSAppConfigConfigurationProfileARN(resourceName string, config *appconfig.GetConfigurationProfileOutput) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		resourceArn := fmt.Sprintf("application/%s/configurationprofile/%s", aws.StringValue(config.ApplicationId), aws.StringValue(config.Id))
+		return testAccCheckResourceAttrRegionalARN(resourceName, "arn", "appconfig", resourceArn)(s)
+	}
 }
 
 func testAccCheckAppConfigConfigurationProfileDestroy(s *terraform.State) error {
@@ -187,36 +269,155 @@ func testAccCheckAwsAppConfigConfigurationProfileExists(resourceName string, pro
 	}
 }
 
-func testAccAWSAppConfigConfigurationProfileName(rName, rDesc string) string {
+func testAccAWSAppConfigConfigurationProfileName(appName, rName, rDesc string) string {
 	return fmt.Sprintf(`
-resource "aws_appconfig_configuration_profile" "test" {
-  name = %[1]q
-  description = %[2]q
+resource "aws_appconfig_application" "app" {
+	name = %[1]q
 }
-`, rName, rDesc)
+resource "aws_appconfig_configuration_profile" "test" {
+  name = %[2]q
+  description = %[3]q
+  application_id = aws_appconfig_application.app.id
+  location_uri = "hosted"
+}
+`, appName, rName, rDesc)
 }
 
-func testAccAWSAppConfigConfigurationProfileTags1(rName, tagKey1, tagValue1 string) string {
+func testAccAWSAppConfigConfigurationProfileLocationSSMParameter(appName, rName string) string {
 	return fmt.Sprintf(`
+resource "aws_appconfig_application" "app" {
+	name = %[1]q
+}
+resource "aws_ssm_parameter" "ssm_param" {
+	name  = "foo"
+	type  = "String"
+	value = "bar"
+  }
 resource "aws_appconfig_configuration_profile" "test" {
-  analyzer_name = %[1]q
+  name = %[2]q
+  application_id = aws_appconfig_application.app.id
+  location_uri = aws_ssm_parameter.ssm_param.arn
+}
+`, appName, rName)
+}
 
-  tags = {
-    %[2]q = %[3]q
+func testAccAWSAppConfigConfigurationProfileLocationSSMDocument(appName, rName string) string {
+	return fmt.Sprintf(`
+resource "aws_appconfig_application" "app" {
+	name = %[1]q
+}
+resource "aws_ssm_document" "ssm_doc" {
+	name          = "test_document"
+	document_type = "Command"
+  
+	content = <<DOC
+	{
+	  "schemaVersion": "1.2",
+	  "description": "Check ip configuration of a Linux instance.",
+	  "parameters": {
+  
+	  },
+	  "runtimeConfig": {
+		"aws:runShellScript": {
+		  "properties": [
+			{
+			  "id": "0.aws:runShellScript",
+			  "runCommand": ["ifconfig"]
+			}
+		  ]
+		}
+	  }
+	}
+  DOC
+  }
+resource "aws_appconfig_configuration_profile" "test" {
+  name = %[2]q
+  application_id = aws_appconfig_application.app.id
+  location_uri = aws_ssm_document.ssm_doc.arn
+}
+`, appName, rName)
+}
+
+func testAccAWSAppConfigConfigurationProfileValidator(appName, rName string) string {
+	return fmt.Sprintf(`
+resource "aws_appconfig_application" "app" {
+	name = %[1]q
+}
+resource "aws_appconfig_configuration_profile" "test" {
+  name = %[2]q
+  application_id = aws_appconfig_application.app.id
+  location_uri = "hosted"
+  validator {
+    type = "JSON_SCHEMA"
+    content = "JSON Schema content or AWS Lambda function name"
+  }
+  validator {
+    type = "LAMBDA"
+    content = "JSON Schema content or AWS Lambda function name"
   }
 }
-`, rName, tagKey1, tagValue1)
+`, appName, rName)
 }
 
-func testAccAWSAppConfigConfigurationProfileTags2(rName, tagKey1, tagValue1, tagKey2, tagValue2 string) string {
+func testAccAWSAppConfigConfigurationProfileRetreivalARN(appName, rName string) string {
 	return fmt.Sprintf(`
-resource "aws_appconfig_configuration_profile" "test" {
-  analyzer_name = %[1]q
-
-  tags = {
-    %[2]q = %[3]q
-    %[4]q = %[5]q
-  }
+resource "aws_appconfig_application" "app" {
+	name = %[1]q
 }
-`, rName, tagKey1, tagValue1, tagKey2, tagValue2)
+resource "aws_iam_role" "test_role" {
+	name = "test_role"
+  
+	assume_role_policy = jsonencode({
+	  Version = "2012-10-17"
+	  Statement = [
+		{
+		  Action = "sts:AssumeRole"
+		  Effect = "Allow"
+		  Sid    = ""
+		  Principal = {
+			Service = "ec2.amazonaws.com"
+		  }
+		},
+	  ]
+	}) 
+}
+resource "aws_appconfig_configuration_profile" "test" {
+  name = %[2]q
+  application_id = aws_appconfig_application.app.id
+  location_uri = "hosted"
+  retrieval_role_arn = aws_iam_role.test_role.arn
+}
+`, appName, rName)
+}
+func testAccAWSAppConfigConfigurationProfileTags1(appName, rName, tagKey1, tagValue1 string) string {
+	return fmt.Sprintf(`
+	resource "aws_appconfig_application" "app" {
+		name = %[1]q
+	}
+	resource "aws_appconfig_configuration_profile" "test" {
+	  name = %[2]q
+	  application_id = aws_appconfig_application.app.id
+	  location_uri = "hosted"
+	  tags = {
+		%[3]q = %[4]q
+	  }
+	}
+`, appName, rName, tagKey1, tagValue1)
+}
+
+func testAccAWSAppConfigConfigurationProfileTags2(appName, rName, tagKey1, tagValue1, tagKey2, tagValue2 string) string {
+	return fmt.Sprintf(`
+	resource "aws_appconfig_application" "app" {
+		name = %[1]q
+	}
+	resource "aws_appconfig_configuration_profile" "test" {
+	  name = %[2]q
+	  application_id = aws_appconfig_application.app.id
+	  location_uri = "hosted"
+	  tags = {
+		%[3]q = %[4]q
+		%[5]q = %[6]q
+	  }
+	}
+`, appName, rName, tagKey1, tagValue1, tagKey2, tagValue2)
 }
