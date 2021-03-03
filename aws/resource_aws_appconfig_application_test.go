@@ -13,12 +13,10 @@ import (
 
 func TestAccAWSAppConfigApplication_basic(t *testing.T) {
 	var application appconfig.GetApplicationOutput
-
 	rName := acctest.RandomWithPrefix("tf-acc-test")
-	rDesc := acctest.RandomWithPrefix("tf-acc-test")
+	rDesc := acctest.RandomWithPrefix("desc")
 	resourceName := "aws_appconfig_application.test"
-	fmt.Println("test starting")
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckAppConfigApplicationDestroy,
@@ -28,9 +26,9 @@ func TestAccAWSAppConfigApplication_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAwsAppConfigApplicationExists(resourceName, &application),
 					resource.TestCheckResourceAttr(resourceName, "name", rName),
-					testAccCheckResourceAttrRegionalARN(resourceName, "arn", "appconfig", aws.StringValue(application.Id)),
+					testAccCheckAWSAppConfigApplicationARN(resourceName, &application),
 					resource.TestCheckResourceAttr(resourceName, "tags.%", "0"),
-					resource.TestCheckResourceAttr(resourceName, "description", ""),
+					resource.TestCheckResourceAttr(resourceName, "description", rDesc),
 				),
 			},
 			{
@@ -49,7 +47,7 @@ func TestAccAWSAppConfigApplication_disappears(t *testing.T) {
 	rDesc := acctest.RandomWithPrefix("tf-acc-test")
 	resourceName := "aws_appconfig_application.test"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckAppConfigApplicationDestroy,
@@ -72,7 +70,7 @@ func TestAccAWSAppConfigApplication_Tags(t *testing.T) {
 	rName := acctest.RandomWithPrefix("tf-acc-test")
 	resourceName := "aws_appconfig_application.test"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckAppConfigApplicationDestroy,
@@ -174,7 +172,6 @@ func testAccCheckAwsAppConfigApplicationExists(resourceName string, application 
 		}
 
 		output, err := conn.GetApplication(input)
-
 		if err != nil {
 			return err
 		}
@@ -182,6 +179,12 @@ func testAccCheckAwsAppConfigApplicationExists(resourceName string, application 
 		*application = *output
 
 		return nil
+	}
+}
+
+func testAccCheckAWSAppConfigApplicationARN(resourceName string, application *appconfig.GetApplicationOutput) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		return testAccCheckResourceAttrRegionalARN(resourceName, "arn", "appconfig", fmt.Sprintf("application/%s", aws.StringValue(application.Id)))(s)
 	}
 }
 

@@ -7,7 +7,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/aws/aws-sdk-go/service/appconfig"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/terraform-providers/terraform-provider-aws/aws/internal/keyvaluetags"
@@ -54,10 +53,11 @@ func resourceAwsAppconfigApplication() *schema.Resource {
 func resourceAwsAppconfigApplicationCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*AWSClient).appconfigconn
 	applicationName := d.Get("name").(string)
+	applicationDescription := d.Get("description").(string)
 
 	input := &appconfig.CreateApplicationInput{
 		Name:        aws.String(applicationName),
-		Description: aws.String(resource.UniqueId()),
+		Description: aws.String(applicationDescription),
 		Tags:        keyvaluetags.New(d.Get("tags").(map[string]interface{})).IgnoreAws().AppconfigTags(),
 	}
 
@@ -67,7 +67,6 @@ func resourceAwsAppconfigApplicationCreate(d *schema.ResourceData, meta interfac
 	}
 
 	d.SetId(aws.StringValue(app.Id))
-	log.Printf("[INFO] AppConfig application ID: %s", d.Id())
 
 	return resourceAwsAppconfigApplicationRead(d, meta)
 }
@@ -105,17 +104,15 @@ func resourceAwsAppconfigApplicationRead(d *schema.ResourceData, meta interface{
 	}.String()
 
 	d.Set("arn", appARN)
+	d.Set("name", output.Name)
+	d.Set("description", output.Description)
 
-	tagInput := &appconfig.ListTagsForResourceInput{
-		ResourceArn: aws.String(appARN),
-	}
-
-	appTags, err := conn.ListTagsForResource(tagInput)
+	tags, err := keyvaluetags.AppconfigListTags(conn, appARN)
 	if err != nil {
 		return fmt.Errorf("error getting tags for AppConfig Application (%s): %s", d.Id(), err)
 	}
 
-	if err := d.Set("tags", keyvaluetags.AppconfigKeyValueTags(appTags.Tags).IgnoreAws().IgnoreConfig(ignoreTagsConfig).Map()); err != nil {
+	if err := d.Set("tags", tags.IgnoreAws().IgnoreConfig(ignoreTagsConfig).Map()); err != nil {
 		return fmt.Errorf("error setting tags: %s", err)
 	}
 
