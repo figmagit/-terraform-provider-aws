@@ -3,10 +3,12 @@ package aws
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/aws/aws-sdk-go/service/appconfig"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/terraform-providers/terraform-provider-aws/aws/internal/keyvaluetags"
@@ -50,18 +52,18 @@ func resourceAwsAppconfigConfigurationProfile() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validateArn,
 			},
-			"validators": {
+			"validator": {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"type": {
-							Type:         schema.TypeInt,
+							Type:         schema.TypeString,
 							Required:     true,
-							ValidateFunc: validation.StringInSlice([]string{"JSON_SCHEMA", "LAMBDA"}, false),
+							ValidateFunc: validation.StringInSlice([]string{appconfig.ValidatorTypeJsonSchema, appconfig.ValidatorTypeLambda}, false),
 						},
 						"content": {
-							Type:     schema.TypeInt,
+							Type:     schema.TypeString,
 							Required: true,
 						},
 					},
@@ -91,9 +93,8 @@ func resourceAwsAppconfigConfigurationProfileCreate(d *schema.ResourceData, meta
 		retreivalRoleArn = nil
 	}
 
-	log.Printf("[INFO] on create, validators %#v", d.Get("validators").(*schema.Set).List())
 	var validatorList []*appconfig.Validator
-	if validators := d.Get("validators").(*schema.Set).List(); len(validators) > 0 {
+	if validators := d.Get("validator").(*schema.Set).List(); len(validators) > 0 {
 		validatorList = convertMapToValidators(validators)
 	}
 
@@ -107,10 +108,27 @@ func resourceAwsAppconfigConfigurationProfileCreate(d *schema.ResourceData, meta
 		Tags:             keyvaluetags.New(d.Get("tags").(map[string]interface{})).IgnoreAws().AppconfigTags(),
 	}
 
-	config, err := conn.CreateConfigurationProfile(input)
-	if err != nil {
-		return fmt.Errorf("Error creating AppConfig configuration profile: %s", err)
+	expectedErrMsg := fmt.Sprintf("Error trying to assume role %s", d.Get("retrieval_role_arn").(string))
+	var config *appconfig.CreateConfigurationProfileOutput
+	var err error
+	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
+		config, err = conn.CreateConfigurationProfile(input)
+		if err != nil {
+			if isAWSErr(err, "BadRequestException", expectedErrMsg) {
+				log.Printf("[DEBUG] Retrying AppConfig Configuration Profile creation: %s", err)
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+	if isResourceTimeoutError(err) {
+		config, err = conn.CreateConfigurationProfile(input)
 	}
+	if err != nil {
+		return fmt.Errorf("Creating AppConfig Configuration Profile failed: %s", err)
+	}
+	log.Printf("[DEBUG] AppConfig Configuration Profile created: %s", config)
 
 	d.SetId(aws.StringValue(config.Id))
 
@@ -155,9 +173,7 @@ func resourceAwsAppconfigConfigurationProfileRead(d *schema.ResourceData, meta i
 	d.Set("description", output.Description)
 	d.Set("location_uri", output.LocationUri)
 	d.Set("retrieval_role_arn", output.RetrievalRoleArn)
-	log.Printf("[INFO] on set, validators from output %#v", output.Validators)
-	log.Printf("[INFO] on set, validators map %#v", convertValidatorsToMap(output.Validators))
-	d.Set("validators", convertValidatorsToMap(output.Validators))
+	d.Set("validator", convertValidatorsToMap(output.Validators))
 
 	tags, err := keyvaluetags.AppconfigListTags(conn, appARN)
 	if err != nil {
@@ -190,7 +206,7 @@ func resourceAwsAppconfigConfigurationProfileUpdate(d *schema.ResourceData, meta
 		retreivalRoleArn = nil
 	}
 	var validatorList []*appconfig.Validator
-	if validators := d.Get("validators").(*schema.Set).List(); len(validators) > 0 {
+	if validators := d.Get("validator").(*schema.Set).List(); len(validators) > 0 {
 		validatorList = convertMapToValidators(validators)
 	}
 
@@ -213,9 +229,24 @@ func resourceAwsAppconfigConfigurationProfileUpdate(d *schema.ResourceData, meta
 		updateInput.Name = aws.String(n.(string))
 	}
 
-	_, err := conn.UpdateConfigurationProfile(updateInput)
+	expectedErrMsg := fmt.Sprintf("Error trying to assume role %s", d.Get("retrieval_role_arn").(string))
+	var err error
+	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
+		_, err = conn.UpdateConfigurationProfile(updateInput)
+		if err != nil {
+			if isAWSErr(err, "BadRequestException", expectedErrMsg) {
+				log.Printf("[DEBUG] Retrying AppConfig Configuration Profile update: %s", err)
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+	if isResourceTimeoutError(err) {
+		_, err = conn.UpdateConfigurationProfile(updateInput)
+	}
 	if err != nil {
-		return fmt.Errorf("error updating AppConfig Configuration Profile (%s): %s", d.Id(), err)
+		return fmt.Errorf("Updating AppConfig Configuration Profile failed: %s", err)
 	}
 
 	return resourceAwsAppconfigConfigurationProfileRead(d, meta)
@@ -245,10 +276,10 @@ func resourceAwsAppconfigConfigurationProfileDelete(d *schema.ResourceData, meta
 func convertMapToValidators(validatorMap []interface{}) []*appconfig.Validator {
 	validatorList := make([]*appconfig.Validator, len(validatorMap))
 	for i, v := range validatorMap {
-		vMap := v.(map[string]string)
+		vMap := v.(map[string]interface{})
 		validator := appconfig.Validator{
-			Content: aws.String(vMap["type"]),
-			Type:    aws.String(vMap["content"]),
+			Type:    aws.String(vMap["type"].(string)),
+			Content: aws.String(vMap["content"].(string)),
 		}
 		validatorList[i] = &validator
 	}
@@ -259,8 +290,8 @@ func convertValidatorsToMap(validatorList []*appconfig.Validator) []map[string]s
 	validatorMap := make([]map[string]string, len(validatorList))
 	for i, v := range validatorList {
 		validator := map[string]string{
-			"content": aws.StringValue(v.Type),
-			"type":    aws.StringValue(v.Content),
+			"type":    aws.StringValue(v.Type),
+			"content": aws.StringValue(v.Content),
 		}
 		validatorMap[i] = validator
 	}

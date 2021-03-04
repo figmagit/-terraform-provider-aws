@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccAwsAppConfigConfigurationProfile_basic(t *testing.T) {
+func TestAccAWSAppConfigConfigurationProfile_basic(t *testing.T) {
 	var profile appconfig.GetConfigurationProfileOutput
 
 	appName := acctest.RandomWithPrefix("tf-acc-test")
@@ -41,7 +41,7 @@ func TestAccAwsAppConfigConfigurationProfile_basic(t *testing.T) {
 	})
 }
 
-func TestAccAwsAppConfigConfigurationProfile_disappears(t *testing.T) {
+func TestAccAWSAppConfigConfigurationProfile_disappears(t *testing.T) {
 	var profile appconfig.GetConfigurationProfileOutput
 
 	appName := acctest.RandomWithPrefix("tf-acc-test")
@@ -65,7 +65,7 @@ func TestAccAwsAppConfigConfigurationProfile_disappears(t *testing.T) {
 		},
 	})
 }
-func TestAccAWSAppConfigConfigurationProfile_LocationURIs(t *testing.T) {
+func TestAccAWSAppConfigConfigurationProfile_LocationURI_SSMParameter(t *testing.T) {
 	var profile appconfig.GetConfigurationProfileOutput
 	appName := acctest.RandomWithPrefix("tf-acc-test")
 	rName := acctest.RandomWithPrefix("tf-acc-test")
@@ -85,6 +85,19 @@ func TestAccAWSAppConfigConfigurationProfile_LocationURIs(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "retrieval_role_arn"),
 				),
 			},
+		},
+	})
+}
+func TestAccAWSAppConfigConfigurationProfile_LocationURI_SSMDocument(t *testing.T) {
+	var profile appconfig.GetConfigurationProfileOutput
+	appName := acctest.RandomWithPrefix("tf-acc-test")
+	rName := acctest.RandomWithPrefix("tf-acc-test")
+	resourceName := "aws_appconfig_configuration_profile.test"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckAppConfigConfigurationProfileDestroy,
+		Steps: []resource.TestStep{
 			{
 				Config: testAccAWSAppConfigConfigurationProfileLocationSSMDocument(appName, rName),
 				Check: resource.ComposeTestCheckFunc(
@@ -121,32 +134,7 @@ func TestAccAWSAppConfigConfigurationProfile_Validators(t *testing.T) {
 		},
 	})
 }
-
-func TestAccAWSAppConfigConfigurationProfile_RetrievalARN(t *testing.T) {
-	var profile appconfig.GetConfigurationProfileOutput
-	appName := acctest.RandomWithPrefix("tf-acc-test")
-	rName := acctest.RandomWithPrefix("tf-acc-test")
-
-	resourceName := "aws_appconfig_configuration_profile.test"
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckAppConfigConfigurationProfileDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccAWSAppConfigConfigurationProfileRetreivalARN(appName, rName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckAwsAppConfigConfigurationProfileExists(resourceName, &profile),
-					resource.TestCheckResourceAttr(resourceName, "name", rName),
-					testAccCheckAWSAppConfigConfigurationProfileARN(resourceName, &profile),
-					resource.TestCheckResourceAttrSet(resourceName, "retrieval_role_arn"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccAwsAppConfigConfigurationProfile_Tags(t *testing.T) {
+func TestAccAWSAppConfigConfigurationProfile_Tags(t *testing.T) {
 	var profile appconfig.GetConfigurationProfileOutput
 
 	appName := acctest.RandomWithPrefix("tf-acc-test")
@@ -285,13 +273,14 @@ resource "aws_appconfig_configuration_profile" "test" {
 `, appName, rName, rDesc)
 }
 
-func testAccAWSAppConfigConfigurationProfileLocationSSMParameter(appName, rName string) string {
+func testAccAWSAppConfigConfigurationProfileIAMRole() string {
+	roleName := acctest.RandomWithPrefix("test-role")
+	attatchmentName := acctest.RandomWithPrefix("test-attatchment")
+	policyName := acctest.RandomWithPrefix("test-policy")
+
 	return fmt.Sprintf(`
-resource "aws_appconfig_application" "app" {
-	name = %[1]q
-}
 resource "aws_iam_role" "test_role" {
-	name = "test_role"
+	name = %[1]q
   
 	assume_role_policy = jsonencode({
 	  Version = "2012-10-17"
@@ -301,47 +290,63 @@ resource "aws_iam_role" "test_role" {
 		  Effect = "Allow"
 		  Sid    = ""
 		  Principal = {
-			Service = "ec2.amazonaws.com"
+			Service = "ssm.amazonaws.com"
 		  }
 		},
 	  ]
-	}) 
+	})
+  }
+  resource "aws_iam_policy_attachment" "test_attach" {
+	name       = %[2]q
+	roles      = [aws_iam_role.test_role.name]
+	policy_arn = aws_iam_policy.test_policy.arn
+  }
+  resource "aws_iam_policy" "test_policy" {
+	name = %[3]q
+  
+	policy = jsonencode({
+		Version = "2012-10-17"
+		Statement = [
+		  {
+			Action = [
+				"ssm:GetParameter*",
+				"ssm:DescribeParameters",
+				"ssm:PutParameter",
+				"ssm:GetDocument"
+			]
+			Effect = "Allow"
+			Resource = "*"
+		  },
+		]
+	  })
+  }
+`, roleName, attatchmentName, policyName)
+}
+
+func testAccAWSAppConfigConfigurationProfileLocationSSMParameter(appName, rName string) string {
+	return fmt.Sprintf(`
+resource "aws_appconfig_application" "app" {
+	name = %[1]q
 }
 resource "aws_ssm_parameter" "ssm_param" {
 	name  = "foo"
 	type  = "String"
 	value = "bar"
-  }
+}
 resource "aws_appconfig_configuration_profile" "test" {
   name = %[2]q
   application_id = aws_appconfig_application.app.id
   location_uri = aws_ssm_parameter.ssm_param.arn
   retrieval_role_arn = aws_iam_role.test_role.arn
 }
-`, appName, rName)
+%[3]s
+`, appName, rName, testAccAWSAppConfigConfigurationProfileIAMRole())
 }
 
 func testAccAWSAppConfigConfigurationProfileLocationSSMDocument(appName, rName string) string {
 	return fmt.Sprintf(`
 resource "aws_appconfig_application" "app" {
 	name = %[1]q
-}
-resource "aws_iam_role" "test_role" {
-	name = "test_role"
-  
-	assume_role_policy = jsonencode({
-	  Version = "2012-10-17"
-	  Statement = [
-		{
-		  Action = "sts:AssumeRole"
-		  Effect = "Allow"
-		  Sid    = ""
-		  Principal = {
-			Service = "ec2.amazonaws.com"
-		  }
-		},
-	  ]
-	}) 
 }
 resource "aws_ssm_document" "ssm_doc" {
 	name          = "test_document"
@@ -373,7 +378,8 @@ resource "aws_appconfig_configuration_profile" "test" {
   location_uri = aws_ssm_document.ssm_doc.arn
   retrieval_role_arn = aws_iam_role.test_role.arn
 }
-`, appName, rName)
+%[3]s
+`, appName, rName, testAccAWSAppConfigConfigurationProfileIAMRole())
 }
 
 func testAccAWSAppConfigConfigurationProfileValidator(appName, rName string) string {
@@ -381,29 +387,15 @@ func testAccAWSAppConfigConfigurationProfileValidator(appName, rName string) str
 resource "aws_appconfig_application" "app" {
 	name = %[1]q
 }
-resource "aws_appconfig_configuration_profile" "test" {
-  name = %[2]q
-  application_id = aws_appconfig_application.app.id
-  location_uri = "hosted"
-  validator {
-    type = "JSON_SCHEMA"
-    content = "JSON Schema content or AWS Lambda function name"
-  }
-  validator {
-    type = "LAMBDA"
-    content = "JSON Schema content or AWS Lambda function name"
-  }
+resource "aws_lambda_function" "test_lambda" {
+	function_name = "lambda_function_name"
+	role          = aws_iam_role.test_role_lambda.arn
+	filename      = "test-fixtures/lambdatest.zip"
+	handler       = "exports.test"
+	runtime       = "nodejs12.x"
 }
-`, appName, rName)
-}
-
-func testAccAWSAppConfigConfigurationProfileRetreivalARN(appName, rName string) string {
-	return fmt.Sprintf(`
-resource "aws_appconfig_application" "app" {
-	name = %[1]q
-}
-resource "aws_iam_role" "test_role" {
-	name = "test_role"
+resource "aws_iam_role" "test_role_lambda" {
+	name = "test_role_lambda"
   
 	assume_role_policy = jsonencode({
 	  Version = "2012-10-17"
@@ -413,20 +405,42 @@ resource "aws_iam_role" "test_role" {
 		  Effect = "Allow"
 		  Sid    = ""
 		  Principal = {
-			Service = "ec2.amazonaws.com"
+			Service = "lambda.amazonaws.com"
 		  }
 		},
 	  ]
-	}) 
-}
+	})
+  }
 resource "aws_appconfig_configuration_profile" "test" {
   name = %[2]q
   application_id = aws_appconfig_application.app.id
   location_uri = "hosted"
-  retrieval_role_arn = aws_iam_role.test_role.arn
+  validator {
+    type = "JSON_SCHEMA"
+	content = <<EOF
+	{
+		"$schema": "http://json-schema.org/draft-04/schema#",
+		"title": "$id$",
+		"description": "BasicFeatureToggle-1",
+		"type": "object",
+		"additionalProperties": false,
+		"patternProperties": {
+			"[^\\s]+$": {
+				"type": "boolean"
+			}
+		},
+		"minProperties": 1
+	}
+	EOF
+  }
+  validator {
+    type = "LAMBDA"
+    content = aws_lambda_function.test_lambda.arn
+  }
 }
 `, appName, rName)
 }
+
 func testAccAWSAppConfigConfigurationProfileTags1(appName, rName, tagKey1, tagValue1 string) string {
 	return fmt.Sprintf(`
 	resource "aws_appconfig_application" "app" {
