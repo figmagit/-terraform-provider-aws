@@ -24,7 +24,7 @@ func TestAccAWSAppConfigApplication_basic(t *testing.T) {
 			{
 				Config: testAccAWSAppConfigApplicationName(rName, rDesc),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckAwsAppConfigApplicationExists(resourceName, &application),
+					testAccCheckAWSAppConfigApplicationExists(resourceName, &application),
 					resource.TestCheckResourceAttr(resourceName, "name", rName),
 					testAccCheckAWSAppConfigApplicationARN(resourceName, &application),
 					resource.TestCheckResourceAttr(resourceName, "tags.%", "0"),
@@ -55,8 +55,8 @@ func TestAccAWSAppConfigApplication_disappears(t *testing.T) {
 			{
 				Config: testAccAWSAppConfigApplicationName(rName, rDesc),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckAwsAppConfigApplicationExists(resourceName, &application),
-					testAccCheckAwsAppConfigApplicationDisappears(&application),
+					testAccCheckAWSAppConfigApplicationExists(resourceName, &application),
+					testAccCheckAWSAppConfigApplicationDisappears(&application),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -78,7 +78,7 @@ func TestAccAWSAppConfigApplication_Tags(t *testing.T) {
 			{
 				Config: testAccAWSAppConfigApplicationTags1(rName, "key1", "value1"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckAwsAppConfigApplicationExists(resourceName, &application),
+					testAccCheckAWSAppConfigApplicationExists(resourceName, &application),
 					resource.TestCheckResourceAttr(resourceName, "tags.%", "1"),
 					resource.TestCheckResourceAttr(resourceName, "tags.key1", "value1"),
 				),
@@ -91,7 +91,7 @@ func TestAccAWSAppConfigApplication_Tags(t *testing.T) {
 			{
 				Config: testAccAWSAppConfigApplicationTags2(rName, "key1", "value1updated", "key2", "value2"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckAwsAppConfigApplicationExists(resourceName, &application),
+					testAccCheckAWSAppConfigApplicationExists(resourceName, &application),
 					resource.TestCheckResourceAttr(resourceName, "tags.%", "2"),
 					resource.TestCheckResourceAttr(resourceName, "tags.key1", "value1updated"),
 					resource.TestCheckResourceAttr(resourceName, "tags.key2", "value2"),
@@ -100,7 +100,7 @@ func TestAccAWSAppConfigApplication_Tags(t *testing.T) {
 			{
 				Config: testAccAWSAppConfigApplicationTags1(rName, "key2", "value2"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckAwsAppConfigApplicationExists(resourceName, &application),
+					testAccCheckAWSAppConfigApplicationExists(resourceName, &application),
 					resource.TestCheckResourceAttr(resourceName, "tags.%", "1"),
 					resource.TestCheckResourceAttr(resourceName, "tags.key2", "value2"),
 				),
@@ -140,7 +140,7 @@ func testAccCheckAppConfigApplicationDestroy(s *terraform.State) error {
 
 }
 
-func testAccCheckAwsAppConfigApplicationDisappears(application *appconfig.GetApplicationOutput) resource.TestCheckFunc {
+func testAccCheckAWSAppConfigApplicationDisappears(application *appconfig.GetApplicationOutput) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		conn := testAccProvider.Meta().(*AWSClient).appconfigconn
 
@@ -154,7 +154,7 @@ func testAccCheckAwsAppConfigApplicationDisappears(application *appconfig.GetApp
 	}
 }
 
-func testAccCheckAwsAppConfigApplicationExists(resourceName string, application *appconfig.GetApplicationOutput) resource.TestCheckFunc {
+func testAccCheckAWSAppConfigApplicationExists(resourceName string, application *appconfig.GetApplicationOutput) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {

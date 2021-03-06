@@ -26,7 +26,7 @@ func TestAccAWSAppConfigConfigurationProfile_basic(t *testing.T) {
 			{
 				Config: testAccAWSAppConfigConfigurationProfileName(appName, rName, rDesc),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckAwsAppConfigConfigurationProfileExists(resourceName, &profile),
+					testAccCheckAWSAppConfigConfigurationProfileExists(resourceName, &profile),
 					resource.TestCheckResourceAttr(resourceName, "name", rName),
 					testAccCheckAWSAppConfigConfigurationProfileARN(resourceName, &profile),
 					resource.TestCheckResourceAttr(resourceName, "tags.%", "0"),
@@ -57,8 +57,8 @@ func TestAccAWSAppConfigConfigurationProfile_disappears(t *testing.T) {
 			{
 				Config: testAccAWSAppConfigConfigurationProfileName(appName, rName, rDesc),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckAwsAppConfigConfigurationProfileExists(resourceName, &profile),
-					testAccCheckAwsAppConfigConfigurationProfileDisappears(&profile),
+					testAccCheckAWSAppConfigConfigurationProfileExists(resourceName, &profile),
+					testAccCheckAWSAppConfigConfigurationProfileDisappears(&profile),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -78,7 +78,7 @@ func TestAccAWSAppConfigConfigurationProfile_LocationURI_SSMParameter(t *testing
 			{
 				Config: testAccAWSAppConfigConfigurationProfileLocationSSMParameter(appName, rName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckAwsAppConfigConfigurationProfileExists(resourceName, &profile),
+					testAccCheckAWSAppConfigConfigurationProfileExists(resourceName, &profile),
 					resource.TestCheckResourceAttr(resourceName, "name", rName),
 					testAccCheckAWSAppConfigConfigurationProfileARN(resourceName, &profile),
 					resource.TestCheckResourceAttrSet(resourceName, "location_uri"),
@@ -101,7 +101,7 @@ func TestAccAWSAppConfigConfigurationProfile_LocationURI_SSMDocument(t *testing.
 			{
 				Config: testAccAWSAppConfigConfigurationProfileLocationSSMDocument(appName, rName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckAwsAppConfigConfigurationProfileExists(resourceName, &profile),
+					testAccCheckAWSAppConfigConfigurationProfileExists(resourceName, &profile),
 					resource.TestCheckResourceAttr(resourceName, "name", rName),
 					testAccCheckAWSAppConfigConfigurationProfileARN(resourceName, &profile),
 					resource.TestCheckResourceAttrSet(resourceName, "location_uri"),
@@ -125,7 +125,7 @@ func TestAccAWSAppConfigConfigurationProfile_Validators(t *testing.T) {
 			{
 				Config: testAccAWSAppConfigConfigurationProfileValidator(appName, rName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckAwsAppConfigConfigurationProfileExists(resourceName, &profile),
+					testAccCheckAWSAppConfigConfigurationProfileExists(resourceName, &profile),
 					resource.TestCheckResourceAttr(resourceName, "name", rName),
 					testAccCheckAWSAppConfigConfigurationProfileARN(resourceName, &profile),
 					resource.TestCheckResourceAttr(resourceName, "tags.%", "0"),
@@ -149,7 +149,7 @@ func TestAccAWSAppConfigConfigurationProfile_Tags(t *testing.T) {
 			{
 				Config: testAccAWSAppConfigConfigurationProfileTags1(appName, rName, "key1", "value1"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckAwsAppConfigConfigurationProfileExists(resourceName, &profile),
+					testAccCheckAWSAppConfigConfigurationProfileExists(resourceName, &profile),
 					resource.TestCheckResourceAttr(resourceName, "tags.%", "1"),
 					resource.TestCheckResourceAttr(resourceName, "tags.key1", "value1"),
 				),
@@ -157,7 +157,7 @@ func TestAccAWSAppConfigConfigurationProfile_Tags(t *testing.T) {
 			{
 				Config: testAccAWSAppConfigConfigurationProfileTags2(appName, rName, "key1", "value1updated", "key2", "value2"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckAwsAppConfigConfigurationProfileExists(resourceName, &profile),
+					testAccCheckAWSAppConfigConfigurationProfileExists(resourceName, &profile),
 					resource.TestCheckResourceAttr(resourceName, "tags.%", "2"),
 					resource.TestCheckResourceAttr(resourceName, "tags.key1", "value1updated"),
 					resource.TestCheckResourceAttr(resourceName, "tags.key2", "value2"),
@@ -166,7 +166,7 @@ func TestAccAWSAppConfigConfigurationProfile_Tags(t *testing.T) {
 			{
 				Config: testAccAWSAppConfigConfigurationProfileTags1(appName, rName, "key2", "value2"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckAwsAppConfigConfigurationProfileExists(resourceName, &profile),
+					testAccCheckAWSAppConfigConfigurationProfileExists(resourceName, &profile),
 					resource.TestCheckResourceAttr(resourceName, "tags.%", "1"),
 					resource.TestCheckResourceAttr(resourceName, "tags.key2", "value2"),
 				),
@@ -214,7 +214,7 @@ func testAccCheckAppConfigConfigurationProfileDestroy(s *terraform.State) error 
 
 }
 
-func testAccCheckAwsAppConfigConfigurationProfileDisappears(profile *appconfig.GetConfigurationProfileOutput) resource.TestCheckFunc {
+func testAccCheckAWSAppConfigConfigurationProfileDisappears(profile *appconfig.GetConfigurationProfileOutput) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		conn := testAccProvider.Meta().(*AWSClient).appconfigconn
 
@@ -229,7 +229,7 @@ func testAccCheckAwsAppConfigConfigurationProfileDisappears(profile *appconfig.G
 	}
 }
 
-func testAccCheckAwsAppConfigConfigurationProfileExists(resourceName string, profile *appconfig.GetConfigurationProfileOutput) resource.TestCheckFunc {
+func testAccCheckAWSAppConfigConfigurationProfileExists(resourceName string, profile *appconfig.GetConfigurationProfileOutput) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {

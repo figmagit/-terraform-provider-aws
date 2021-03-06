@@ -150,7 +150,7 @@ func resourceAwsAppconfigApplicationUpdate(d *schema.ResourceData, meta interfac
 
 	_, err := conn.UpdateApplication(updateInput)
 	if err != nil {
-		return fmt.Errorf("error updating AppConfig (%s): %s", d.Id(), err)
+		return fmt.Errorf("error updating AppConfig Application(%s): %s", d.Id(), err)
 	}
 
 	return resourceAwsAppconfigApplicationRead(d, meta)
