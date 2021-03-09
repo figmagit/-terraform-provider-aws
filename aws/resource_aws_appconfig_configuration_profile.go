@@ -236,7 +236,7 @@ func resourceAwsAppconfigConfigurationProfileUpdate(d *schema.ResourceData, meta
 	err = resource.Retry(iamwaiter.PropagationTimeout, func() *resource.RetryError {
 		_, err = conn.UpdateConfigurationProfile(updateInput)
 		if err != nil {
-			if isAWSErr(err, "BadRequestException", expectedErrMsg) || isAWSErr(err, "BadRequestException", expectedErrMsg2) te{
+			if isAWSErr(err, "BadRequestException", expectedErrMsg) || isAWSErr(err, "BadRequestException", expectedErrMsg2) {
 				log.Printf("[DEBUG] Retrying AppConfig Configuration Profile update: %s", err)
 				return resource.RetryableError(err)
 			}
