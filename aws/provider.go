@@ -454,6 +454,7 @@ func Provider() *schema.Provider {
 			"aws_appconfig_deployment":                                resourceAwsAppconfigDeployment(),
 			"aws_appconfig_deployment_strategy":                       resourceAwsAppconfigDeploymentStrategy(),
 			"aws_appconfig_environment":                               resourceAwsAppconfigEnvironment(),
+			"aws_appconfig_hosted_configuration_version":              resourceAwsAppconfigHostedConfigurationVersion(),
 			"aws_appmesh_gateway_route":                               resourceAwsAppmeshGatewayRoute(),
 			"aws_appmesh_mesh":                                        resourceAwsAppmeshMesh(),
 			"aws_appmesh_route":                                       resourceAwsAppmeshRoute(),
