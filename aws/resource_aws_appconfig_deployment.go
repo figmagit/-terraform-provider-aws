@@ -3,10 +3,12 @@ package aws
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/aws/aws-sdk-go/service/appconfig"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/terraform-providers/terraform-provider-aws/aws/internal/keyvaluetags"
@@ -83,13 +85,30 @@ func resourceAwsAppconfigDeploymentCreate(d *schema.ResourceData, meta interface
 		Tags:                   keyvaluetags.New(d.Get("tags").(map[string]interface{})).IgnoreAws().AppconfigTags(),
 	}
 
-	deploy, err := conn.StartDeployment(input)
+	var deploy *appconfig.StartDeploymentOutput
+	var err error
+	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
+		deploy, err = conn.StartDeployment(input)
+		if err != nil {
+			if isAWSErr(err, appconfig.ErrCodeConflictException, "") {
+				log.Printf("[DEBUG] Retrying AppConfig Deployment creation: %s", err)
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+
+	if isResourceTimeoutError(err) {
+		deploy, err = conn.StartDeployment(input)
+	}
+
 	if err != nil {
 		return fmt.Errorf("Creating AppConfig Deployment failed: %s", err)
 	}
-	log.Printf("[DEBUG] AppConfig Deployment created: %s", deploy)
 
 	d.SetId(fmt.Sprintf("%s-%s-%d", aws.StringValue(applicationID), aws.StringValue(environmentID), aws.Int64Value(deploy.DeploymentNumber)))
+	d.Set("deployment_number", aws.Int64Value(deploy.DeploymentNumber))
 
 	return resourceAwsAppconfigDeploymentRead(d, meta)
 }
@@ -104,7 +123,7 @@ func resourceAwsAppconfigDeploymentRead(d *schema.ResourceData, meta interface{}
 	input := &appconfig.GetDeploymentInput{
 		ApplicationId:    applicationID,
 		EnvironmentId:    environmentID,
-		DeploymentNumber: aws.Int64(d.Get("deployment_number").(int64)),
+		DeploymentNumber: aws.Int64(int64(d.Get("deployment_number").(int))),
 	}
 
 	output, err := conn.GetDeployment(input)
@@ -123,6 +142,13 @@ func resourceAwsAppconfigDeploymentRead(d *schema.ResourceData, meta interface{}
 		return fmt.Errorf("error getting AppConfig Deployment (%s): empty response", d.Id())
 	}
 
+	currentState := aws.StringValue(output.State)
+	if currentState == appconfig.DeploymentStateRolledBack || currentState == appconfig.DeploymentStateRollingBack {
+		log.Printf("[WARN] Appconfig Deployment (%s) rolled back, removing from state", d.Id())
+		d.SetId("")
+		return nil
+	}
+
 	appID := aws.StringValue(output.ApplicationId)
 	envID := aws.StringValue(output.EnvironmentId)
 	deployNum := fmt.Sprintf("%d", aws.Int64Value(output.DeploymentNumber))
@@ -137,6 +163,7 @@ func resourceAwsAppconfigDeploymentRead(d *schema.ResourceData, meta interface{}
 
 	d.Set("arn", appARN)
 	d.Set("description", output.Description)
+	d.Set("deployment_number", aws.Int64Value(output.DeploymentNumber))
 
 	tags, err := keyvaluetags.AppconfigListTags(conn, appARN)
 	if err != nil {
@@ -167,12 +194,17 @@ func resourceAwsAppconfigDeploymentDelete(d *schema.ResourceData, meta interface
 
 	input := &appconfig.StopDeploymentInput{
 		ApplicationId:    aws.String(d.Get("application_id").(string)),
-		DeploymentNumber: aws.Int64(d.Get("deployment_number").(int64)),
+		EnvironmentId:    aws.String(d.Get("environment_id").(string)),
+		DeploymentNumber: aws.Int64(int64(d.Get("deployment_number").(int))),
 	}
 
 	_, err := conn.StopDeployment(input)
 
 	if isAWSErr(err, appconfig.ErrCodeResourceNotFoundException, "") {
+		return nil
+	}
+
+	if isAWSErr(err, appconfig.ErrCodeBadRequestException, "it has a status of ROLLED_BACK") {
 		return nil
 	}
 

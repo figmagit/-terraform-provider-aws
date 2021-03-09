@@ -14,15 +14,18 @@ import (
 
 func TestAccAWSAppConfigDeployment_basic(t *testing.T) {
 	var deployment appconfig.GetDeploymentOutput
+
+	baseName := acctest.RandomWithPrefix("tf-acc-test")
 	rDesc := acctest.RandomWithPrefix("desc")
 	resourceName := "aws_appconfig_deployment.test"
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckAppConfigDeploymentDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccAWSAppConfigDeploymentName(rDesc),
+				Config: testAccAWSAppConfigDeploymentName(baseName, rDesc),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAWSAppConfigDeploymentExists(resourceName, &deployment),
 					testAccCheckAWSAppConfigDeploymentARN(resourceName, &deployment),
@@ -38,6 +41,7 @@ func TestAccAWSAppConfigDeployment_basic(t *testing.T) {
 func TestAccAWSAppConfigDeployment_disappears(t *testing.T) {
 	var deployment appconfig.GetDeploymentOutput
 
+	baseName := acctest.RandomWithPrefix("tf-acc-test")
 	rDesc := acctest.RandomWithPrefix("tf-acc-test")
 	resourceName := "aws_appconfig_deployment.test"
 
@@ -47,7 +51,7 @@ func TestAccAWSAppConfigDeployment_disappears(t *testing.T) {
 		CheckDestroy: testAccCheckAppConfigDeploymentDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccAWSAppConfigDeploymentName(rDesc),
+				Config: testAccAWSAppConfigDeploymentName(baseName, rDesc),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAWSAppConfigDeploymentExists(resourceName, &deployment),
 					testAccCheckAWSAppConfigDeploymentDisappears(&deployment),
@@ -61,14 +65,16 @@ func TestAccAWSAppConfigDeployment_disappears(t *testing.T) {
 func TestAccAWSAppConfigDeployment_Tags(t *testing.T) {
 	var deployment appconfig.GetDeploymentOutput
 
+	baseName := acctest.RandomWithPrefix("tf-acc-test")
 	resourceName := "aws_appconfig_deployment.test"
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckAppConfigDeploymentDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccAWSAppConfigDeploymentTags1("key1", "value1"),
+				Config: testAccAWSAppConfigDeploymentTags1(baseName, "key1", "value1"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAWSAppConfigDeploymentExists(resourceName, &deployment),
 					resource.TestCheckResourceAttr(resourceName, "tags.%", "1"),
@@ -76,7 +82,7 @@ func TestAccAWSAppConfigDeployment_Tags(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccAWSAppConfigDeploymentTags2("key1", "value1updated", "key2", "value2"),
+				Config: testAccAWSAppConfigDeploymentTags2(baseName, "key1", "value1updated", "key2", "value2"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAWSAppConfigDeploymentExists(resourceName, &deployment),
 					resource.TestCheckResourceAttr(resourceName, "tags.%", "2"),
@@ -115,6 +121,11 @@ func testAccCheckAppConfigDeploymentDestroy(s *terraform.State) error {
 
 		if err != nil {
 			return err
+		}
+
+		currentState := aws.StringValue(output.State)
+		if currentState == appconfig.DeploymentStateRolledBack || currentState == appconfig.DeploymentStateRollingBack {
+			return nil
 		}
 
 		if output != nil {
@@ -187,8 +198,7 @@ func testAccCheckAWSAppConfigDeploymentARN(resourceName string, deployment *appc
 	}
 }
 
-func testAccAWSAppConfigDeploymentSetup() string {
-	baseName := acctest.RandomWithPrefix("tf-acc-test")
+func testAccAWSAppConfigDeploymentSetup(baseName string) string {
 	appName := fmt.Sprintf("%s-app", baseName)
 	envName := fmt.Sprintf("%s-env", baseName)
 	stratName := fmt.Sprintf("%s-strat", baseName)
@@ -212,10 +222,16 @@ resource "aws_appconfig_configuration_profile" "config" {
   	location_uri = "hosted"
 	name = %[4]q
 }
+resource "aws_appconfig_hosted_configuration_version" "hosted" {
+	application_id = aws_appconfig_application.app.id
+	configuration_profile_id = aws_appconfig_configuration_profile.config.id
+	content = "Settings"
+	content_type = "text/plain"
+}
 `, appName, envName, stratName, configName)
 }
 
-func testAccAWSAppConfigDeploymentName(rDesc string) string {
+func testAccAWSAppConfigDeploymentName(baseName, rDesc string) string {
 	return fmt.Sprintf(`
 %[1]s
 resource "aws_appconfig_deployment" "test" {
@@ -223,13 +239,13 @@ resource "aws_appconfig_deployment" "test" {
 	environment_id = aws_appconfig_environment.env.id
 	deployment_strategy_id = aws_appconfig_deployment_strategy.strategy.id
 	configuration_profile_id = aws_appconfig_configuration_profile.config.id
-	configuration_version = "1"
+	configuration_version = aws_appconfig_hosted_configuration_version.hosted.version_number
 	description = %[2]q
 }
-`, testAccAWSAppConfigDeploymentSetup(), rDesc)
+`, testAccAWSAppConfigDeploymentSetup(baseName), rDesc)
 }
 
-func testAccAWSAppConfigDeploymentTags1(tagKey1, tagValue1 string) string {
+func testAccAWSAppConfigDeploymentTags1(baseName, tagKey1, tagValue1 string) string {
 	return fmt.Sprintf(`
 %[1]s
 resource "aws_appconfig_deployment" "test" {
@@ -237,15 +253,15 @@ resource "aws_appconfig_deployment" "test" {
 	environment_id = aws_appconfig_environment.env.id
 	deployment_strategy_id = aws_appconfig_deployment_strategy.strategy.id
 	configuration_profile_id = aws_appconfig_configuration_profile.config.id
-	configuration_version = "1"
+	configuration_version = aws_appconfig_hosted_configuration_version.hosted.version_number
 	tags = {
 		%[2]q = %[3]q
 	}
 }
-`, testAccAWSAppConfigDeploymentSetup(), tagKey1, tagValue1)
+`, testAccAWSAppConfigDeploymentSetup(baseName), tagKey1, tagValue1)
 }
 
-func testAccAWSAppConfigDeploymentTags2(tagKey1, tagValue1, tagKey2, tagValue2 string) string {
+func testAccAWSAppConfigDeploymentTags2(baseName, tagKey1, tagValue1, tagKey2, tagValue2 string) string {
 	return fmt.Sprintf(`
 %[1]s
 resource "aws_appconfig_deployment" "test" {
@@ -253,11 +269,11 @@ resource "aws_appconfig_deployment" "test" {
 	environment_id = aws_appconfig_environment.env.id
 	deployment_strategy_id = aws_appconfig_deployment_strategy.strategy.id
 	configuration_profile_id = aws_appconfig_configuration_profile.config.id
-	configuration_version = "1"
+	configuration_version = aws_appconfig_hosted_configuration_version.hosted.version_number
 	tags = {
 		%[2]q = %[3]q
 		%[4]q = %[5]q
 	  }
 }
-`, testAccAWSAppConfigDeploymentSetup(), tagKey1, tagValue1, tagKey2, tagValue2)
+`, testAccAWSAppConfigDeploymentSetup(baseName), tagKey1, tagValue1, tagKey2, tagValue2)
 }
