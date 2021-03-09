@@ -99,7 +99,7 @@ func resourceAwsAppconfigConfigurationProfileCreate(d *schema.ResourceData, meta
 	}
 
 	input := &appconfig.CreateConfigurationProfileInput{
-		ApplicationId:    (applicationID),
+		ApplicationId:    applicationID,
 		Name:             configProfileName,
 		Description:      configProfileDescription,
 		LocationUri:      locationURI,
