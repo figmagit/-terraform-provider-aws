@@ -18,7 +18,7 @@ func TestAccAWSAppConfigConfigurationProfile_basic(t *testing.T) {
 	rName := acctest.RandomWithPrefix("tf-acc-test")
 	rDesc := acctest.RandomWithPrefix("tf-acc-test")
 	resourceName := "aws_appconfig_configuration_profile.test"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckAppConfigConfigurationProfileDestroy,
@@ -49,7 +49,7 @@ func TestAccAWSAppConfigConfigurationProfile_disappears(t *testing.T) {
 	rDesc := acctest.RandomWithPrefix("tf-acc-test")
 	resourceName := "aws_appconfig_configuration_profile.test"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckAppConfigConfigurationProfileDestroy,
@@ -70,7 +70,7 @@ func TestAccAWSAppConfigConfigurationProfile_LocationURI_SSMParameter(t *testing
 	appName := acctest.RandomWithPrefix("tf-acc-test")
 	rName := acctest.RandomWithPrefix("tf-acc-test")
 	resourceName := "aws_appconfig_configuration_profile.test"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckAppConfigConfigurationProfileDestroy,
@@ -93,7 +93,7 @@ func TestAccAWSAppConfigConfigurationProfile_LocationURI_SSMDocument(t *testing.
 	appName := acctest.RandomWithPrefix("tf-acc-test")
 	rName := acctest.RandomWithPrefix("tf-acc-test")
 	resourceName := "aws_appconfig_configuration_profile.test"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckAppConfigConfigurationProfileDestroy,
@@ -117,7 +117,7 @@ func TestAccAWSAppConfigConfigurationProfile_Validators(t *testing.T) {
 	appName := acctest.RandomWithPrefix("tf-acc-test")
 	rName := acctest.RandomWithPrefix("tf-acc-test")
 	resourceName := "aws_appconfig_configuration_profile.test"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckAppConfigConfigurationProfileDestroy,
@@ -142,7 +142,7 @@ func TestAccAWSAppConfigConfigurationProfile_Tags(t *testing.T) {
 	rName := acctest.RandomWithPrefix("tf-acc-test")
 	resourceName := "aws_appconfig_configuration_profile.test"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckAppConfigConfigurationProfileDestroy,

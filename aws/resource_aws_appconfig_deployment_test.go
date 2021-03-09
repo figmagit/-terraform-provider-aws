@@ -19,7 +19,7 @@ func TestAccAWSAppConfigDeployment_basic(t *testing.T) {
 	rDesc := acctest.RandomWithPrefix("desc")
 	resourceName := "aws_appconfig_deployment.test"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckAppConfigDeploymentDestroy,
@@ -45,7 +45,7 @@ func TestAccAWSAppConfigDeployment_disappears(t *testing.T) {
 	rDesc := acctest.RandomWithPrefix("tf-acc-test")
 	resourceName := "aws_appconfig_deployment.test"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckAppConfigDeploymentDestroy,
@@ -68,7 +68,7 @@ func TestAccAWSAppConfigDeployment_Tags(t *testing.T) {
 	baseName := acctest.RandomWithPrefix("tf-acc-test")
 	resourceName := "aws_appconfig_deployment.test"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckAppConfigDeploymentDestroy,

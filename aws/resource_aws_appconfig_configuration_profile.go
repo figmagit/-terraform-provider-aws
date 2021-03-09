@@ -3,7 +3,6 @@ package aws
 import (
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/arn"
@@ -12,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/terraform-providers/terraform-provider-aws/aws/internal/keyvaluetags"
+	iamwaiter "github.com/terraform-providers/terraform-provider-aws/aws/internal/service/iam/waiter"
 )
 
 func resourceAwsAppconfigConfigurationProfile() *schema.Resource {
@@ -109,12 +109,13 @@ func resourceAwsAppconfigConfigurationProfileCreate(d *schema.ResourceData, meta
 	}
 
 	expectedErrMsg := fmt.Sprintf("Error trying to assume role %s", d.Get("retrieval_role_arn").(string))
+	expectedErrMsg2 := "is not authorized to perform the operation"
 	var config *appconfig.CreateConfigurationProfileOutput
 	var err error
-	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
+	err = resource.Retry(iamwaiter.PropagationTimeout, func() *resource.RetryError {
 		config, err = conn.CreateConfigurationProfile(input)
 		if err != nil {
-			if isAWSErr(err, "BadRequestException", expectedErrMsg) {
+			if isAWSErr(err, "BadRequestException", expectedErrMsg) || isAWSErr(err, "BadRequestException", expectedErrMsg2) {
 				log.Printf("[DEBUG] Retrying AppConfig Configuration Profile creation: %s", err)
 				return resource.RetryableError(err)
 			}
@@ -230,11 +231,12 @@ func resourceAwsAppconfigConfigurationProfileUpdate(d *schema.ResourceData, meta
 	}
 
 	expectedErrMsg := fmt.Sprintf("Error trying to assume role %s", d.Get("retrieval_role_arn").(string))
+	expectedErrMsg2 := "is not authorized to perform the operation"
 	var err error
-	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
+	err = resource.Retry(iamwaiter.PropagationTimeout, func() *resource.RetryError {
 		_, err = conn.UpdateConfigurationProfile(updateInput)
 		if err != nil {
-			if isAWSErr(err, "BadRequestException", expectedErrMsg) {
+			if isAWSErr(err, "BadRequestException", expectedErrMsg) || isAWSErr(err, "BadRequestException", expectedErrMsg2) te{
 				log.Printf("[DEBUG] Retrying AppConfig Configuration Profile update: %s", err)
 				return resource.RetryableError(err)
 			}

@@ -16,7 +16,7 @@ func TestAccAWSAppConfigEnvironment_basic(t *testing.T) {
 	rName := acctest.RandomWithPrefix("tf-acc-test")
 	rDesc := acctest.RandomWithPrefix("desc")
 	resourceName := "aws_appconfig_environment.test"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckAppConfigEnvironmentDestroy,
@@ -43,7 +43,7 @@ func TestAccAWSAppConfigEnvironment_disappears(t *testing.T) {
 	rDesc := acctest.RandomWithPrefix("tf-acc-test")
 	resourceName := "aws_appconfig_environment.test"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckAppConfigEnvironmentDestroy,
@@ -64,7 +64,7 @@ func TestAccAWSAppConfigEnvironment_Monitors(t *testing.T) {
 	var environment appconfig.GetEnvironmentOutput
 	rName := acctest.RandomWithPrefix("tf-acc-test")
 	resourceName := "aws_appconfig_environment.test"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckAppConfigEnvironmentDestroy,
@@ -89,7 +89,7 @@ func TestAccAWSAppConfigEnvironment_Tags(t *testing.T) {
 	rName := acctest.RandomWithPrefix("tf-acc-test")
 	resourceName := "aws_appconfig_environment.test"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckAppConfigEnvironmentDestroy,
