@@ -15,6 +15,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/amplify"
 	"github.com/aws/aws-sdk-go/service/apigateway"
 	"github.com/aws/aws-sdk-go/service/apigatewayv2"
+	"github.com/aws/aws-sdk-go/service/appconfig"
 	"github.com/aws/aws-sdk-go/service/applicationautoscaling"
 	"github.com/aws/aws-sdk-go/service/applicationinsights"
 	"github.com/aws/aws-sdk-go/service/appmesh"
@@ -212,6 +213,7 @@ type AWSClient struct {
 	apigatewayconn                      *apigateway.APIGateway
 	apigatewayv2conn                    *apigatewayv2.ApiGatewayV2
 	appautoscalingconn                  *applicationautoscaling.ApplicationAutoScaling
+	appconfigconn                       *appconfig.AppConfig
 	applicationinsightsconn             *applicationinsights.ApplicationInsights
 	appmeshconn                         *appmesh.AppMesh
 	appstreamconn                       *appstream.AppStream
@@ -452,6 +454,7 @@ func (c *Config) Client() (interface{}, error) {
 		apigatewayconn:                      apigateway.New(sess.Copy(&aws.Config{Endpoint: aws.String(c.Endpoints["apigateway"])})),
 		apigatewayv2conn:                    apigatewayv2.New(sess.Copy(&aws.Config{Endpoint: aws.String(c.Endpoints["apigateway"])})),
 		appautoscalingconn:                  applicationautoscaling.New(sess.Copy(&aws.Config{Endpoint: aws.String(c.Endpoints["applicationautoscaling"])})),
+		appconfigconn:                       appconfig.New(sess.Copy(&aws.Config{Endpoint: aws.String(c.Endpoints["appconfig"])})),
 		applicationinsightsconn:             applicationinsights.New(sess.Copy(&aws.Config{Endpoint: aws.String(c.Endpoints["applicationinsights"])})),
 		appmeshconn:                         appmesh.New(sess.Copy(&aws.Config{Endpoint: aws.String(c.Endpoints["appmesh"])})),
 		appstreamconn:                       appstream.New(sess.Copy(&aws.Config{Endpoint: aws.String(c.Endpoints["appstream"])})),
