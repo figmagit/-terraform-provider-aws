@@ -205,28 +205,28 @@ func testAccAWSAppConfigDeploymentSetup(baseName string) string {
 	configName := fmt.Sprintf("%s-config", baseName)
 	return fmt.Sprintf(`
 resource "aws_appconfig_application" "app" {
-	name = %[1]q
+  name = %[1]q
 }
 resource "aws_appconfig_environment" "env" {
-	application_id = aws_appconfig_application.app.id
-	name = %[2]q
+  application_id = aws_appconfig_application.app.id
+  name           = %[2]q
 }
 resource "aws_appconfig_deployment_strategy" "strategy" {
-	name = %[3]q
-	deployment_duration_in_minutes = 10
-	growth_type = "LINEAR"
-	replicate_to = "NONE"
+  name                           = %[3]q
+  deployment_duration_in_minutes = 10
+  growth_type                    = "LINEAR"
+  replicate_to                   = "NONE"
 }
 resource "aws_appconfig_configuration_profile" "config" {
-	application_id = aws_appconfig_application.app.id
-  	location_uri = "hosted"
-	name = %[4]q
+  application_id = aws_appconfig_application.app.id
+  location_uri   = "hosted"
+  name           = %[4]q
 }
 resource "aws_appconfig_hosted_configuration_version" "hosted" {
-	application_id = aws_appconfig_application.app.id
-	configuration_profile_id = aws_appconfig_configuration_profile.config.id
-	content = "Settings"
-	content_type = "text/plain"
+  application_id           = aws_appconfig_application.app.id
+  configuration_profile_id = aws_appconfig_configuration_profile.config.id
+  content                  = "Settings"
+  content_type             = "text/plain"
 }
 `, appName, envName, stratName, configName)
 }
@@ -235,12 +235,12 @@ func testAccAWSAppConfigDeploymentName(baseName, rDesc string) string {
 	return fmt.Sprintf(`
 %[1]s
 resource "aws_appconfig_deployment" "test" {
-	application_id = aws_appconfig_application.app.id
-	environment_id = aws_appconfig_environment.env.id
-	deployment_strategy_id = aws_appconfig_deployment_strategy.strategy.id
-	configuration_profile_id = aws_appconfig_configuration_profile.config.id
-	configuration_version = aws_appconfig_hosted_configuration_version.hosted.version_number
-	description = %[2]q
+  application_id           = aws_appconfig_application.app.id
+  environment_id           = aws_appconfig_environment.env.id
+  deployment_strategy_id   = aws_appconfig_deployment_strategy.strategy.id
+  configuration_profile_id = aws_appconfig_configuration_profile.config.id
+  configuration_version    = aws_appconfig_hosted_configuration_version.hosted.version_number
+  description              = %[2]q
 }
 `, testAccAWSAppConfigDeploymentSetup(baseName), rDesc)
 }
@@ -249,14 +249,14 @@ func testAccAWSAppConfigDeploymentTags1(baseName, tagKey1, tagValue1 string) str
 	return fmt.Sprintf(`
 %[1]s
 resource "aws_appconfig_deployment" "test" {
-	application_id = aws_appconfig_application.app.id
-	environment_id = aws_appconfig_environment.env.id
-	deployment_strategy_id = aws_appconfig_deployment_strategy.strategy.id
-	configuration_profile_id = aws_appconfig_configuration_profile.config.id
-	configuration_version = aws_appconfig_hosted_configuration_version.hosted.version_number
-	tags = {
-		%[2]q = %[3]q
-	}
+  application_id           = aws_appconfig_application.app.id
+  environment_id           = aws_appconfig_environment.env.id
+  deployment_strategy_id   = aws_appconfig_deployment_strategy.strategy.id
+  configuration_profile_id = aws_appconfig_configuration_profile.config.id
+  configuration_version    = aws_appconfig_hosted_configuration_version.hosted.version_number
+  tags = {
+    %[2]q = %[3]q
+  }
 }
 `, testAccAWSAppConfigDeploymentSetup(baseName), tagKey1, tagValue1)
 }
@@ -265,15 +265,15 @@ func testAccAWSAppConfigDeploymentTags2(baseName, tagKey1, tagValue1, tagKey2, t
 	return fmt.Sprintf(`
 %[1]s
 resource "aws_appconfig_deployment" "test" {
-	application_id = aws_appconfig_application.app.id
-	environment_id = aws_appconfig_environment.env.id
-	deployment_strategy_id = aws_appconfig_deployment_strategy.strategy.id
-	configuration_profile_id = aws_appconfig_configuration_profile.config.id
-	configuration_version = aws_appconfig_hosted_configuration_version.hosted.version_number
-	tags = {
-		%[2]q = %[3]q
-		%[4]q = %[5]q
-	  }
+  application_id           = aws_appconfig_application.app.id
+  environment_id           = aws_appconfig_environment.env.id
+  deployment_strategy_id   = aws_appconfig_deployment_strategy.strategy.id
+  configuration_profile_id = aws_appconfig_configuration_profile.config.id
+  configuration_version    = aws_appconfig_hosted_configuration_version.hosted.version_number
+  tags = {
+    %[2]q = %[3]q
+    %[4]q = %[5]q
+  }
 }
 `, testAccAWSAppConfigDeploymentSetup(baseName), tagKey1, tagValue1, tagKey2, tagValue2)
 }

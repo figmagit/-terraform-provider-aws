@@ -202,12 +202,12 @@ func testAccAWSAppConfigEnvironmentName(rName, rDesc string) string {
 	appName := fmt.Sprintf("%s-app", rName)
 	return fmt.Sprintf(`
 resource "aws_appconfig_application" "app" {
-	name = %[1]q
+  name = %[1]q
 }
 resource "aws_appconfig_environment" "test" {
-  name = %[2]q
+  name           = %[2]q
   application_id = aws_appconfig_application.app.id
-  description = %[3]q
+  description    = %[3]q
 }
 `, appName, rName, rDesc)
 }
@@ -218,45 +218,45 @@ func testAccAWSAppConfigEnvironmentMonitors(rName string) string {
 	appName := fmt.Sprintf("%s-app", rName)
 	return fmt.Sprintf(`
 resource "aws_appconfig_application" "app" {
-	name = %[1]q
+  name = %[1]q
 }
 resource "aws_appconfig_environment" "test" {
-  name = %[2]q
+  name           = %[2]q
   application_id = aws_appconfig_application.app.id
   monitor {
-	alarm_arn = aws_cloudwatch_metric_alarm.test_alarm.arn
-	alarm_role_arn = aws_iam_role.test_role.arn
-  } 
+    alarm_arn      = aws_cloudwatch_metric_alarm.test_alarm.arn
+    alarm_role_arn = aws_iam_role.test_role.arn
+  }
 }
 resource "aws_cloudwatch_metric_alarm" "test_alarm" {
-	alarm_name                = %[3]q
-	comparison_operator       = "GreaterThanOrEqualToThreshold"
-	evaluation_periods        = "2"
-	metric_name               = "CPUUtilization"
-	namespace                 = "AWS/EC2"
-	period                    = "120"
-	statistic                 = "Average"
-	threshold                 = "80"
-	alarm_description         = "This metric monitors ec2 cpu utilization"
-	insufficient_data_actions = []
-	}
+  alarm_name                = %[3]q
+  comparison_operator       = "GreaterThanOrEqualToThreshold"
+  evaluation_periods        = "2"
+  metric_name               = "CPUUtilization"
+  namespace                 = "AWS/EC2"
+  period                    = "120"
+  statistic                 = "Average"
+  threshold                 = "80"
+  alarm_description         = "This metric monitors ec2 cpu utilization"
+  insufficient_data_actions = []
+}
 resource "aws_iam_role" "test_role" {
-	name = %[4]q
-	
-	assume_role_policy = jsonencode({
-		Version = "2012-10-17"
-		Statement = [
-		{
-			Action = "sts:AssumeRole"
-			Effect = "Allow"
-			Sid    = ""
-			Principal = {
-			Service = "ssm.amazonaws.com"
-			}
-		},
-		]
-	})
-	}
+  name = %[4]q
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Sid    = ""
+        Principal = {
+          Service = "ssm.amazonaws.com"
+        }
+      },
+    ]
+  })
+}
 `, appName, rName, alarmName, roleName)
 }
 
@@ -264,10 +264,10 @@ func testAccAWSAppConfigEnvironmentTags1(rName, tagKey1, tagValue1 string) strin
 	appName := fmt.Sprintf("%s-app", rName)
 	return fmt.Sprintf(`
 resource "aws_appconfig_application" "app" {
-	name = %[1]q
+  name = %[1]q
 }
 resource "aws_appconfig_environment" "test" {
-  name = %[2]q
+  name           = %[2]q
   application_id = aws_appconfig_application.app.id
   tags = {
     %[3]q = %[4]q
@@ -280,10 +280,10 @@ func testAccAWSAppConfigEnvironmentTags2(rName, tagKey1, tagValue1, tagKey2, tag
 	appName := fmt.Sprintf("%s-app", rName)
 	return fmt.Sprintf(`
 resource "aws_appconfig_application" "app" {
-	name = %[1]q
+  name = %[1]q
 }
 resource "aws_appconfig_environment" "test" {
-  name = %[2]q
+  name           = %[2]q
   application_id = aws_appconfig_application.app.id
   tags = {
     %[3]q = %[4]q

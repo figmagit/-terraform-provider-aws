@@ -263,13 +263,13 @@ func testAccCheckAWSAppConfigConfigurationProfileExists(resourceName string, pro
 func testAccAWSAppConfigConfigurationProfileName(appName, rName, rDesc string) string {
 	return fmt.Sprintf(`
 resource "aws_appconfig_application" "app" {
-	name = %[1]q
+  name = %[1]q
 }
 resource "aws_appconfig_configuration_profile" "test" {
-  name = %[2]q
-  description = %[3]q
+  name           = %[2]q
+  description    = %[3]q
   application_id = aws_appconfig_application.app.id
-  location_uri = "hosted"
+  location_uri   = "hosted"
 }
 `, appName, rName, rDesc)
 }
@@ -281,63 +281,63 @@ func testAccAWSAppConfigConfigurationProfileIAMRole() string {
 
 	return fmt.Sprintf(`
 resource "aws_iam_role" "test_role" {
-	name = %[1]q
-  
-	assume_role_policy = jsonencode({
-	  Version = "2012-10-17"
-	  Statement = [
-		{
-		  Action = "sts:AssumeRole"
-		  Effect = "Allow"
-		  Sid    = ""
-		  Principal = {
-			Service = "ssm.amazonaws.com"
-		  }
-		},
-	  ]
-	})
-  }
-  resource "aws_iam_policy_attachment" "test_attach" {
-	name       = %[2]q
-	roles      = [aws_iam_role.test_role.name]
-	policy_arn = aws_iam_policy.test_policy.arn
-  }
-  resource "aws_iam_policy" "test_policy" {
-	name = %[3]q
-  
-	policy = jsonencode({
-		Version = "2012-10-17"
-		Statement = [
-		  {
-			Action = [
-				"ssm:GetParameter*",
-				"ssm:DescribeParameters",
-				"ssm:PutParameter",
-				"ssm:GetDocument"
-			]
-			Effect = "Allow"
-			Resource = "*"
-		  },
-		]
-	  })
-  }
+  name = %[1]q
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Sid    = ""
+        Principal = {
+          Service = "ssm.amazonaws.com"
+        }
+      },
+    ]
+  })
+}
+resource "aws_iam_policy_attachment" "test_attach" {
+  name       = %[2]q
+  roles      = [aws_iam_role.test_role.name]
+  policy_arn = aws_iam_policy.test_policy.arn
+}
+resource "aws_iam_policy" "test_policy" {
+  name = %[3]q
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "ssm:GetParameter*",
+          "ssm:DescribeParameters",
+          "ssm:PutParameter",
+          "ssm:GetDocument"
+        ]
+        Effect   = "Allow"
+        Resource = "*"
+      },
+    ]
+  })
+}
 `, roleName, attatchmentName, policyName)
 }
 
 func testAccAWSAppConfigConfigurationProfileLocationSSMParameter(appName, rName string) string {
 	return fmt.Sprintf(`
 resource "aws_appconfig_application" "app" {
-	name = %[1]q
+  name = %[1]q
 }
 resource "aws_ssm_parameter" "ssm_param" {
-	name  = "foo"
-	type  = "String"
-	value = "bar"
+  name  = "foo"
+  type  = "String"
+  value = "bar"
 }
 resource "aws_appconfig_configuration_profile" "test" {
-  name = %[2]q
-  application_id = aws_appconfig_application.app.id
-  location_uri = aws_ssm_parameter.ssm_param.arn
+  name               = %[2]q
+  application_id     = aws_appconfig_application.app.id
+  location_uri       = aws_ssm_parameter.ssm_param.arn
   retrieval_role_arn = aws_iam_role.test_role.arn
 }
 %[3]s
@@ -347,13 +347,13 @@ resource "aws_appconfig_configuration_profile" "test" {
 func testAccAWSAppConfigConfigurationProfileLocationSSMDocument(appName, rName string) string {
 	return fmt.Sprintf(`
 resource "aws_appconfig_application" "app" {
-	name = %[1]q
+  name = %[1]q
 }
 resource "aws_ssm_document" "ssm_doc" {
-	name          = "test_document"
-	document_type = "Command"
-  
-	content = <<DOC
+  name          = "test_document"
+  document_type = "Command"
+
+  content = <<DOC
 	{
 	  "schemaVersion": "1.2",
 	  "description": "Check ip configuration of a Linux instance.",
@@ -372,11 +372,11 @@ resource "aws_ssm_document" "ssm_doc" {
 	  }
 	}
   DOC
-  }
+}
 resource "aws_appconfig_configuration_profile" "test" {
-  name = %[2]q
-  application_id = aws_appconfig_application.app.id
-  location_uri = aws_ssm_document.ssm_doc.arn
+  name               = %[2]q
+  application_id     = aws_appconfig_application.app.id
+  location_uri       = aws_ssm_document.ssm_doc.arn
   retrieval_role_arn = aws_iam_role.test_role.arn
 }
 %[3]s
@@ -386,39 +386,39 @@ resource "aws_appconfig_configuration_profile" "test" {
 func testAccAWSAppConfigConfigurationProfileValidator(appName, rName string) string {
 	return fmt.Sprintf(`
 resource "aws_appconfig_application" "app" {
-	name = %[1]q
+  name = %[1]q
 }
 resource "aws_lambda_function" "test_lambda" {
-	function_name = "lambda_function_name"
-	role          = aws_iam_role.test_role_lambda.arn
-	filename      = "test-fixtures/lambdatest.zip"
-	handler       = "exports.test"
-	runtime       = "nodejs12.x"
+  function_name = "lambda_function_name"
+  role          = aws_iam_role.test_role_lambda.arn
+  filename      = "test-fixtures/lambdatest.zip"
+  handler       = "exports.test"
+  runtime       = "nodejs12.x"
 }
 resource "aws_iam_role" "test_role_lambda" {
-	name = "test_role_lambda"
-  
-	assume_role_policy = jsonencode({
-	  Version = "2012-10-17"
-	  Statement = [
-		{
-		  Action = "sts:AssumeRole"
-		  Effect = "Allow"
-		  Sid    = ""
-		  Principal = {
-			Service = "lambda.amazonaws.com"
-		  }
-		},
-	  ]
-	})
-  }
+  name = "test_role_lambda"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Sid    = ""
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        }
+      },
+    ]
+  })
+}
 resource "aws_appconfig_configuration_profile" "test" {
-  name = %[2]q
+  name           = %[2]q
   application_id = aws_appconfig_application.app.id
-  location_uri = "hosted"
+  location_uri   = "hosted"
   validator {
-    type = "JSON_SCHEMA"
-	content = <<EOF
+    type    = "JSON_SCHEMA"
+    content = <<EOF
 	{
 		"$schema": "http://json-schema.org/draft-04/schema#",
 		"title": "$id$",
@@ -435,7 +435,7 @@ resource "aws_appconfig_configuration_profile" "test" {
 	EOF
   }
   validator {
-    type = "LAMBDA"
+    type    = "LAMBDA"
     content = aws_lambda_function.test_lambda.arn
   }
 }
@@ -444,33 +444,33 @@ resource "aws_appconfig_configuration_profile" "test" {
 
 func testAccAWSAppConfigConfigurationProfileTags1(appName, rName, tagKey1, tagValue1 string) string {
 	return fmt.Sprintf(`
-	resource "aws_appconfig_application" "app" {
-		name = %[1]q
-	}
-	resource "aws_appconfig_configuration_profile" "test" {
-	  name = %[2]q
-	  application_id = aws_appconfig_application.app.id
-	  location_uri = "hosted"
-	  tags = {
-		%[3]q = %[4]q
-	  }
-	}
+resource "aws_appconfig_application" "app" {
+  name = %[1]q
+}
+resource "aws_appconfig_configuration_profile" "test" {
+  name           = %[2]q
+  application_id = aws_appconfig_application.app.id
+  location_uri   = "hosted"
+  tags = {
+    %[3]q = %[4]q
+  }
+}
 `, appName, rName, tagKey1, tagValue1)
 }
 
 func testAccAWSAppConfigConfigurationProfileTags2(appName, rName, tagKey1, tagValue1, tagKey2, tagValue2 string) string {
 	return fmt.Sprintf(`
-	resource "aws_appconfig_application" "app" {
-		name = %[1]q
-	}
-	resource "aws_appconfig_configuration_profile" "test" {
-	  name = %[2]q
-	  application_id = aws_appconfig_application.app.id
-	  location_uri = "hosted"
-	  tags = {
-		%[3]q = %[4]q
-		%[5]q = %[6]q
-	  }
-	}
+resource "aws_appconfig_application" "app" {
+  name = %[1]q
+}
+resource "aws_appconfig_configuration_profile" "test" {
+  name           = %[2]q
+  application_id = aws_appconfig_application.app.id
+  location_uri   = "hosted"
+  tags = {
+    %[3]q = %[4]q
+    %[5]q = %[6]q
+  }
+}
 `, appName, rName, tagKey1, tagValue1, tagKey2, tagValue2)
 }

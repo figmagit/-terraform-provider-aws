@@ -230,12 +230,12 @@ func testAccAWSAppConfigHostedConfigurationVersionSetup() string {
 	configName := fmt.Sprintf("%s-config", baseName)
 	return fmt.Sprintf(`
 resource "aws_appconfig_application" "app" {
-	name = %[1]q
+  name = %[1]q
 }
 resource "aws_appconfig_configuration_profile" "config" {
-	application_id = aws_appconfig_application.app.id
-  	location_uri = "hosted"
-	name = %[2]q
+  application_id = aws_appconfig_application.app.id
+  location_uri   = "hosted"
+  name           = %[2]q
 }
 `, appName, configName)
 }
@@ -244,11 +244,11 @@ func testAccAWSAppConfigHostedConfigurationVersionName(rDesc string) string {
 	return fmt.Sprintf(`
 %[1]s
 resource "aws_appconfig_hosted_configuration_version" "test" {
-	application_id = aws_appconfig_application.app.id
-	configuration_profile_id = aws_appconfig_configuration_profile.config.id
-	content = "Settings"
-	content_type = "text/plain"
-	description = %[2]q
+  application_id           = aws_appconfig_application.app.id
+  configuration_profile_id = aws_appconfig_configuration_profile.config.id
+  content                  = "Settings"
+  content_type             = "text/plain"
+  description              = %[2]q
 }
 `, testAccAWSAppConfigHostedConfigurationVersionSetup(), rDesc)
 }
@@ -257,15 +257,15 @@ func testAccAWSAppConfigHostedConfigurationVersionPlainText() string {
 	return fmt.Sprintf(`
 %[1]s
 resource "aws_appconfig_hosted_configuration_version" "test" {
-	application_id = aws_appconfig_application.app.id
-	configuration_profile_id = aws_appconfig_configuration_profile.config.id
-	content = <<-EOF
+  application_id           = aws_appconfig_application.app.id
+  configuration_profile_id = aws_appconfig_configuration_profile.config.id
+  content                  = <<-EOF
 	This is a list of the new settings! 
 	1. A 
 	2. B 
 	3. C
 	EOF
-	content_type = "text/plain"
+  content_type             = "text/plain"
 }
 `, testAccAWSAppConfigHostedConfigurationVersionSetup())
 }
@@ -274,10 +274,10 @@ func testAccAWSAppConfigHostedConfigurationVersionJSON() string {
 	return fmt.Sprintf(`
 %[1]s
 resource "aws_appconfig_hosted_configuration_version" "test" {
-	application_id = aws_appconfig_application.app.id
-	configuration_profile_id = aws_appconfig_configuration_profile.config.id
-	content = jsonencode({"hello"="world"})
-	content_type = "application/json"
+  application_id           = aws_appconfig_application.app.id
+  configuration_profile_id = aws_appconfig_configuration_profile.config.id
+  content                  = jsonencode({ "hello" = "world" })
+  content_type             = "application/json"
 }
 `, testAccAWSAppConfigHostedConfigurationVersionSetup())
 }
@@ -286,10 +286,10 @@ func testAccAWSAppConfigHostedConfigurationVersionYAML() string {
 	return fmt.Sprintf(`
 %[1]s
 resource "aws_appconfig_hosted_configuration_version" "test" {
-	application_id = aws_appconfig_application.app.id
-	configuration_profile_id = aws_appconfig_configuration_profile.config.id
-	content = yamlencode({"a":"b", "c":"d"})
-	content_type = "application/x-yaml"
+  application_id           = aws_appconfig_application.app.id
+  configuration_profile_id = aws_appconfig_configuration_profile.config.id
+  content                  = yamlencode({ "a" : "b", "c" : "d" })
+  content_type             = "application/x-yaml"
 }
 `, testAccAWSAppConfigHostedConfigurationVersionSetup())
 }

@@ -275,11 +275,11 @@ func testAccCheckAWSAppConfigDeploymentStrategyARN(resourceName string, deployme
 func testAccAWSAppConfigDeploymentStrategyName(rName, rDesc string) string {
 	return fmt.Sprintf(`
 resource "aws_appconfig_deployment_strategy" "test" {
-  name = %[1]q
-  description = %[2]q
+  name                           = %[1]q
+  description                    = %[2]q
   deployment_duration_in_minutes = 10
-  growth_type = "LINEAR"
-  replicate_to = "NONE"
+  growth_type                    = "LINEAR"
+  replicate_to                   = "NONE"
 }
 `, rName, rDesc)
 }
@@ -287,11 +287,11 @@ resource "aws_appconfig_deployment_strategy" "test" {
 func testAccAWSAppConfigDeploymentStrategyGrowth(rName string) string {
 	return fmt.Sprintf(`
 resource "aws_appconfig_deployment_strategy" "test" {
-  name = %[1]q
+  name                           = %[1]q
   deployment_duration_in_minutes = 10
-  growth_factor = 24.5
-  growth_type = "EXPONENTIAL"
-  replicate_to = "NONE"
+  growth_factor                  = 24.5
+  growth_type                    = "EXPONENTIAL"
+  replicate_to                   = "NONE"
 }
 `, rName)
 }
@@ -299,10 +299,10 @@ resource "aws_appconfig_deployment_strategy" "test" {
 func testAccAWSAppConfigDeploymentStrategyReplicateTo(rName string) string {
 	return fmt.Sprintf(`
 resource "aws_appconfig_deployment_strategy" "test" {
-  name = %[1]q
+  name                           = %[1]q
   deployment_duration_in_minutes = 10
-  growth_type = "LINEAR"
-  replicate_to = "SSM_DOCUMENT"
+  growth_type                    = "LINEAR"
+  replicate_to                   = "SSM_DOCUMENT"
 }
 `, rName)
 }
@@ -310,11 +310,11 @@ resource "aws_appconfig_deployment_strategy" "test" {
 func testAccAWSAppConfigDeploymentStrategyBakeTime(rName string) string {
 	return fmt.Sprintf(`
 resource "aws_appconfig_deployment_strategy" "test" {
-  name = %[1]q
+  name                           = %[1]q
   deployment_duration_in_minutes = 10
-  final_bake_time_in_minutes = 45
-  growth_type = "LINEAR"
-  replicate_to = "NONE"
+  final_bake_time_in_minutes     = 45
+  growth_type                    = "LINEAR"
+  replicate_to                   = "NONE"
 }
 `, rName)
 }
@@ -322,10 +322,10 @@ resource "aws_appconfig_deployment_strategy" "test" {
 func testAccAWSAppConfigDeploymentStrategyTags1(rName, tagKey1, tagValue1 string) string {
 	return fmt.Sprintf(`
 resource "aws_appconfig_deployment_strategy" "test" {
-  name = %[1]q
+  name                           = %[1]q
   deployment_duration_in_minutes = 10
-  growth_type = "LINEAR"
-  replicate_to = "NONE"
+  growth_type                    = "LINEAR"
+  replicate_to                   = "NONE"
 
   tags = {
     %[2]q = %[3]q
@@ -337,10 +337,10 @@ resource "aws_appconfig_deployment_strategy" "test" {
 func testAccAWSAppConfigDeploymentStrategyTags2(rName, tagKey1, tagValue1, tagKey2, tagValue2 string) string {
 	return fmt.Sprintf(`
 resource "aws_appconfig_deployment_strategy" "test" {
-  name = %[1]q
+  name                           = %[1]q
   deployment_duration_in_minutes = 10
-  growth_type = "LINEAR"
-  replicate_to = "NONE"
+  growth_type                    = "LINEAR"
+  replicate_to                   = "NONE"
 
   tags = {
     %[2]q = %[3]q
