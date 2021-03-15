@@ -157,37 +157,29 @@ func resourceAwsAppconfigEnvironmentUpdate(d *schema.ResourceData, meta interfac
 		}
 	}
 
-	applicationID := aws.String(d.Get("application_id").(string))
-	environmentID := aws.String(d.Id())
-	environmentName := aws.String(d.Get("name").(string))
-	environmentDescription := aws.String(d.Get("description").(string))
+	if d.HasChanges("name", "description", "monitors") {
+		applicationID := aws.String(d.Get("application_id").(string))
+		environmentID := aws.String(d.Id())
+		environmentName := aws.String(d.Get("name").(string))
+		environmentDescription := aws.String(d.Get("description").(string))
 
-	var monitorList []*appconfig.Monitor
-	if monitors := d.Get("monitor").(*schema.Set).List(); len(monitors) > 0 {
-		monitorList = convertMapToMonitors(monitors)
-	}
+		var monitorList []*appconfig.Monitor
+		if monitors := d.Get("monitor").(*schema.Set).List(); len(monitors) > 0 {
+			monitorList = convertMapToMonitors(monitors)
+		}
 
-	updateInput := &appconfig.UpdateEnvironmentInput{
-		ApplicationId: applicationID,
-		EnvironmentId: environmentID,
-		Description:   environmentDescription,
-		Name:          environmentName,
-		Monitors:      monitorList,
-	}
+		updateInput := &appconfig.UpdateEnvironmentInput{
+			ApplicationId: applicationID,
+			EnvironmentId: environmentID,
+			Description:   environmentDescription,
+			Name:          environmentName,
+			Monitors:      monitorList,
+		}
 
-	if d.HasChange("description") {
-		_, n := d.GetChange("description")
-		updateInput.Description = aws.String(n.(string))
-	}
-
-	if d.HasChange("name") {
-		_, n := d.GetChange("name")
-		updateInput.Name = aws.String(n.(string))
-	}
-
-	_, err := conn.UpdateEnvironment(updateInput)
-	if err != nil {
-		return fmt.Errorf("Updating AppConfig Environment failed: %s", err)
+		_, err := conn.UpdateEnvironment(updateInput)
+		if err != nil {
+			return fmt.Errorf("Updating AppConfig Environment failed: %s", err)
+		}
 	}
 
 	return resourceAwsAppconfigEnvironmentRead(d, meta)

@@ -129,28 +129,20 @@ func resourceAwsAppconfigApplicationUpdate(d *schema.ResourceData, meta interfac
 		}
 	}
 
-	appDesc := d.Get("description").(string)
-	appName := d.Get("name").(string)
+	if d.HasChanges("description", "name") {
+		appDesc := d.Get("description").(string)
+		appName := d.Get("name").(string)
 
-	updateInput := &appconfig.UpdateApplicationInput{
-		ApplicationId: aws.String(d.Id()),
-		Description:   aws.String(appDesc),
-		Name:          aws.String(appName),
-	}
+		updateInput := &appconfig.UpdateApplicationInput{
+			ApplicationId: aws.String(d.Id()),
+			Description:   aws.String(appDesc),
+			Name:          aws.String(appName),
+		}
 
-	if d.HasChange("description") {
-		_, n := d.GetChange("description")
-		updateInput.Description = aws.String(n.(string))
-	}
-
-	if d.HasChange("name") {
-		_, n := d.GetChange("name")
-		updateInput.Name = aws.String(n.(string))
-	}
-
-	_, err := conn.UpdateApplication(updateInput)
-	if err != nil {
-		return fmt.Errorf("error updating AppConfig Application(%s): %s", d.Id(), err)
+		_, err := conn.UpdateApplication(updateInput)
+		if err != nil {
+			return fmt.Errorf("error updating AppConfig Application(%s): %s", d.Id(), err)
+		}
 	}
 
 	return resourceAwsAppconfigApplicationRead(d, meta)

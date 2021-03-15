@@ -182,24 +182,26 @@ func resourceAwsAppconfigDeploymentStrategyUpdate(d *schema.ResourceData, meta i
 		}
 	}
 
-	deploymentStrategyDescription := aws.String(d.Get("description").(string))
-	deployDuration := aws.Int64(int64(d.Get("deployment_duration_in_minutes").(int)))
-	bakeTime := aws.Int64(int64(d.Get("final_bake_time_in_minutes").(int)))
-	growthFactor := aws.Float64(d.Get("growth_factor").(float64))
-	growthType := aws.String(d.Get("growth_type").(string))
+	if d.HasChanges("deployment_duration_in_minutes", "description", "final_bake_time_in_minutes", "growth_factor", "growth_type") {
+		deploymentStrategyDescription := aws.String(d.Get("description").(string))
+		deployDuration := aws.Int64(int64(d.Get("deployment_duration_in_minutes").(int)))
+		bakeTime := aws.Int64(int64(d.Get("final_bake_time_in_minutes").(int)))
+		growthFactor := aws.Float64(d.Get("growth_factor").(float64))
+		growthType := aws.String(d.Get("growth_type").(string))
 
-	updateInput := &appconfig.UpdateDeploymentStrategyInput{
-		DeploymentStrategyId:        aws.String(d.Id()),
-		Description:                 deploymentStrategyDescription,
-		DeploymentDurationInMinutes: deployDuration,
-		FinalBakeTimeInMinutes:      bakeTime,
-		GrowthFactor:                growthFactor,
-		GrowthType:                  growthType,
-	}
+		updateInput := &appconfig.UpdateDeploymentStrategyInput{
+			DeploymentStrategyId:        aws.String(d.Id()),
+			Description:                 deploymentStrategyDescription,
+			DeploymentDurationInMinutes: deployDuration,
+			FinalBakeTimeInMinutes:      bakeTime,
+			GrowthFactor:                growthFactor,
+			GrowthType:                  growthType,
+		}
 
-	_, err := conn.UpdateDeploymentStrategy(updateInput)
-	if err != nil {
-		return fmt.Errorf("error updating AppConfig DeploymentStrategy(%s): %s", d.Id(), err)
+		_, err := conn.UpdateDeploymentStrategy(updateInput)
+		if err != nil {
+			return fmt.Errorf("error updating AppConfig DeploymentStrategy(%s): %s", d.Id(), err)
+		}
 	}
 
 	return resourceAwsAppconfigDeploymentStrategyRead(d, meta)

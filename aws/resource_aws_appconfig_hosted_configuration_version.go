@@ -140,11 +140,11 @@ func resourceAwsAppconfigHostedConfigurationVersionRead(d *schema.ResourceData, 
 
 func resourceAwsAppconfigHostedConfigurationVersionUpdate(d *schema.ResourceData, meta interface{}) error {
 	if err := resourceAwsAppconfigHostedConfigurationVersionDelete(d, meta); err != nil {
-		return fmt.Errorf("error rolling back existing deployment during update: %s", err)
+		return fmt.Errorf("error deleting hosted configuration version during update: %s", err)
 	}
 
 	if err := resourceAwsAppconfigHostedConfigurationVersionCreate(d, meta); err != nil {
-		return fmt.Errorf("error starting new deployment during update: %s", err)
+		return fmt.Errorf("error creating hosted configuration version during update: %s", err)
 	}
 
 	return resourceAwsAppconfigHostedConfigurationVersionRead(d, meta)

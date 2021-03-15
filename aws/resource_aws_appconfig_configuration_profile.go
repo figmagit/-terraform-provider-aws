@@ -88,9 +88,9 @@ func resourceAwsAppconfigConfigurationProfileCreate(d *schema.ResourceData, meta
 	configProfileName := aws.String(d.Get("name").(string))
 	configProfileDescription := aws.String(d.Get("description").(string))
 	locationURI := aws.String(d.Get("location_uri").(string))
-	retreivalRoleArn := aws.String(d.Get("retrieval_role_arn").(string))
-	if *retreivalRoleArn == "" {
-		retreivalRoleArn = nil
+	retrievalRoleArn := aws.String(d.Get("retrieval_role_arn").(string))
+	if *retrievalRoleArn == "" {
+		retrievalRoleArn = nil
 	}
 
 	var validatorList []*appconfig.Validator
@@ -103,7 +103,7 @@ func resourceAwsAppconfigConfigurationProfileCreate(d *schema.ResourceData, meta
 		Name:             configProfileName,
 		Description:      configProfileDescription,
 		LocationUri:      locationURI,
-		RetrievalRoleArn: retreivalRoleArn,
+		RetrievalRoleArn: retrievalRoleArn,
 		Validators:       validatorList,
 		Tags:             keyvaluetags.New(d.Get("tags").(map[string]interface{})).IgnoreAws().AppconfigTags(),
 	}
@@ -202,9 +202,9 @@ func resourceAwsAppconfigConfigurationProfileUpdate(d *schema.ResourceData, meta
 	configProfileID := aws.String(d.Id())
 	configProfileName := aws.String(d.Get("name").(string))
 	configProfileDescription := aws.String(d.Get("description").(string))
-	retreivalRoleArn := aws.String(d.Get("retrieval_role_arn").(string))
-	if *retreivalRoleArn == "" {
-		retreivalRoleArn = nil
+	retrievalRoleArn := aws.String(d.Get("retrieval_role_arn").(string))
+	if *retrievalRoleArn == "" {
+		retrievalRoleArn = nil
 	}
 	var validatorList []*appconfig.Validator
 	if validators := d.Get("validator").(*schema.Set).List(); len(validators) > 0 {
@@ -216,7 +216,7 @@ func resourceAwsAppconfigConfigurationProfileUpdate(d *schema.ResourceData, meta
 		ConfigurationProfileId: configProfileID,
 		Description:            configProfileDescription,
 		Name:                   configProfileName,
-		RetrievalRoleArn:       retreivalRoleArn,
+		RetrievalRoleArn:       retrievalRoleArn,
 		Validators:             validatorList,
 	}
 
