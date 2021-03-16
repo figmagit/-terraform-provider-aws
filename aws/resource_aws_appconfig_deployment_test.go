@@ -201,7 +201,7 @@ func testAccCheckAWSAppConfigDeploymentARN(resourceName string, deployment *appc
 func testAccAWSAppConfigDeploymentSetup(baseName string) string {
 	appName := fmt.Sprintf("%s-app", baseName)
 	envName := fmt.Sprintf("%s-env", baseName)
-	stratName := fmt.Sprintf("%s-strat", baseName)
+	strategyName := fmt.Sprintf("%s-strategy", baseName)
 	configName := fmt.Sprintf("%s-config", baseName)
 	return fmt.Sprintf(`
 resource "aws_appconfig_application" "app" {
@@ -228,7 +228,7 @@ resource "aws_appconfig_hosted_configuration_version" "hosted" {
   content                  = "Settings"
   content_type             = "text/plain"
 }
-`, appName, envName, stratName, configName)
+`, appName, envName, strategyName, configName)
 }
 
 func testAccAWSAppConfigDeploymentName(baseName, rDesc string) string {
