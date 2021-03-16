@@ -348,7 +348,7 @@ resource "aws_ecs_cluster" "default" {
   name = "%s"
 }
 resource "aws_ecs_task_definition" "mongo" {
-  family = "%s"
+  family                = "%s"
   container_definitions = <<DEFINITION
 [
   {
@@ -362,9 +362,9 @@ resource "aws_ecs_task_definition" "mongo" {
 DEFINITION
 }
 resource "aws_ecs_service" "mongo" {
-  name                  = "%s"
-  cluster               = "${aws_ecs_cluster.default.id}"
-  desired_count         = 1
+  name          = "%s"
+  cluster       = "${aws_ecs_cluster.default.id}"
+  desired_count = 1
   deployment_controller {
     type = "EXTERNAL"
   }
@@ -386,7 +386,7 @@ resource "aws_ecs_cluster" "default" {
   name = "%s"
 }
 resource "aws_ecs_task_definition" "mongo" {
-  family = "%s"
+  family                = "%s"
   container_definitions = <<DEFINITION
 [
   {
@@ -400,9 +400,9 @@ resource "aws_ecs_task_definition" "mongo" {
 DEFINITION
 }
 resource "aws_ecs_service" "mongo" {
-  name                  = "%s"
-  cluster               = "${aws_ecs_cluster.default.id}"
-  desired_count         = 1
+  name          = "%s"
+  cluster       = "${aws_ecs_cluster.default.id}"
+  desired_count = 1
   deployment_controller {
     type = "EXTERNAL"
   }
@@ -564,7 +564,7 @@ resource "aws_ecs_cluster" "main" {
   name = "%s"
 }
 resource "aws_ecs_task_definition" "with_lb_changes" {
-  family = "%s"
+  family                = "%s"
   container_definitions = <<DEFINITION
 [
   {
@@ -604,9 +604,9 @@ resource "aws_lb_listener" "front_end" {
   }
 }
 resource "aws_ecs_service" "with_alb" {
-  name                  = "%s"
-  cluster               = "${aws_ecs_cluster.main.id}"
-  desired_count         = 1
+  name          = "%s"
+  cluster       = "${aws_ecs_cluster.main.id}"
+  desired_count = 1
   deployment_controller {
     type = "EXTERNAL"
   }
@@ -630,7 +630,7 @@ resource "aws_ecs_cluster" "test" {
   name = %q
 }
 resource "aws_ecs_task_definition" "test" {
-  family = %q
+  family                = %q
   container_definitions = <<DEFINITION
 [
   {
@@ -644,9 +644,9 @@ resource "aws_ecs_task_definition" "test" {
 DEFINITION
 }
 resource "aws_ecs_service" "test" {
-  cluster               = "${aws_ecs_cluster.test.id}"
-  desired_count         = 0
-  name                  = %q
+  cluster       = "${aws_ecs_cluster.test.id}"
+  desired_count = 0
+  name          = %q
   deployment_controller {
     type = "EXTERNAL"
   }
@@ -668,7 +668,7 @@ resource "aws_ecs_cluster" "test" {
   name = %q
 }
 resource "aws_ecs_task_definition" "test" {
-  family = %q
+  family                = %q
   container_definitions = <<DEFINITION
 [
   {
@@ -682,9 +682,9 @@ resource "aws_ecs_task_definition" "test" {
 DEFINITION
 }
 resource "aws_ecs_service" "test" {
-  cluster               = "${aws_ecs_cluster.test.id}"
-  desired_count         = 0
-  name                  = %q
+  cluster       = "${aws_ecs_cluster.test.id}"
+  desired_count = 0
+  name          = %q
   deployment_controller {
     type = "EXTERNAL"
   }
@@ -754,8 +754,8 @@ resource "aws_ecs_cluster" "test" {
   name = "%s"
 }
 resource "aws_ecs_task_definition" "test" {
-  family       = "%s"
-  network_mode = "awsvpc"
+  family                = "%s"
+  network_mode          = "awsvpc"
   container_definitions = <<DEFINITION
 [
   {
@@ -769,9 +769,9 @@ resource "aws_ecs_task_definition" "test" {
 DEFINITION
 }
 resource "aws_ecs_service" "test" {
-  name                  = "%s"
-  cluster               = "${aws_ecs_cluster.test.id}"
-  desired_count         = 1
+  name          = "%s"
+  cluster       = "${aws_ecs_cluster.test.id}"
+  desired_count = 1
   deployment_controller {
     type = "EXTERNAL"
   }
@@ -847,7 +847,7 @@ resource "aws_ecs_task_definition" "mongo" {
   requires_compatibilities = ["FARGATE"]
   cpu                      = "256"
   memory                   = "512"
-  container_definitions = <<DEFINITION
+  container_definitions    = <<DEFINITION
 [
   {
     "cpu": 256,
@@ -861,9 +861,9 @@ resource "aws_ecs_task_definition" "mongo" {
 DEFINITION
 }
 resource "aws_ecs_service" "main" {
-  name                  = "%s"
-  cluster               = "${aws_ecs_cluster.main.id}"
-  desired_count         = 1
+  name          = "%s"
+  cluster       = "${aws_ecs_cluster.main.id}"
+  desired_count = 1
   deployment_controller {
     type = "EXTERNAL"
   }
@@ -938,7 +938,7 @@ resource "aws_ecs_task_definition" "mongo" {
   requires_compatibilities = ["FARGATE"]
   cpu                      = "256"
   memory                   = "512"
-  container_definitions = <<DEFINITION
+  container_definitions    = <<DEFINITION
 [
   {
     "cpu": 256,
@@ -952,17 +952,17 @@ resource "aws_ecs_task_definition" "mongo" {
 DEFINITION
 }
 resource "aws_ecs_service" "main" {
-  name                  = "%s"
-  cluster               = "${aws_ecs_cluster.main.id}"
-  desired_count         = 1
+  name          = "%s"
+  cluster       = "${aws_ecs_cluster.main.id}"
+  desired_count = 1
   deployment_controller {
     type = "EXTERNAL"
   }
 }
 resource "aws_ecs_task_set" "main" {
-  service         = "${aws_ecs_service.main.id}"
-  cluster         = "${aws_ecs_cluster.main.id}"
-  task_definition = "${aws_ecs_task_definition.mongo.arn}"
+  service          = "${aws_ecs_service.main.id}"
+  cluster          = "${aws_ecs_cluster.main.id}"
+  task_definition  = "${aws_ecs_task_definition.mongo.arn}"
   launch_type      = "FARGATE"
   platform_version = %q
   network_configuration {
