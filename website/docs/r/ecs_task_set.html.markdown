@@ -16,12 +16,12 @@ See [ECS Task Set section in AWS developer guide](https://docs.amazonaws.cn/en_u
 
 ```hcl
 resource "aws_ecs_task_set" "mongo" {
-  service         = "${aws_ecs_service.foo.id}"
-  cluster         = "${aws_ecs_cluster.foo.id}"
-  task_definition = "${aws_ecs_task_definition.mongo.arn}"
+  service         = aws_ecs_service.foo.id
+  cluster         = aws_ecs_cluster.foo.id
+  task_definition = aws_ecs_task_definition.mongo.arn
 
   load_balancer {
-    target_group_arn = "${aws_lb_target_group.foo.arn}"
+    target_group_arn = aws_lb_target_group.foo.arn
     container_name   = "mongo"
     container_port   = 8080
   }
