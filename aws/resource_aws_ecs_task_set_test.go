@@ -428,7 +428,7 @@ resource "aws_ecs_cluster" "default" {
   name = "%s"
 }
 resource "aws_ecs_task_definition" "mongo" {
-  family = "%s"
+  family                = "%s"
   container_definitions = <<DEFINITION
 [
   {
@@ -442,9 +442,9 @@ resource "aws_ecs_task_definition" "mongo" {
 DEFINITION
 }
 resource "aws_ecs_service" "mongo" {
-  name                  = "%s"
-  cluster               = "${aws_ecs_cluster.default.id}"
-  desired_count         = 1
+  name          = "%s"
+  cluster       = "${aws_ecs_cluster.default.id}"
+  desired_count = 1
   deployment_controller {
     type = "EXTERNAL"
   }
@@ -455,8 +455,8 @@ resource "aws_ecs_task_set" "mongo" {
   task_definition = "${aws_ecs_task_definition.mongo.arn}"
   capacity_provider_strategy {
     capacity_provider = aws_ecs_capacity_provider.test.name
-    weight = %d
-    base   = %d
+    weight            = %d
+    base              = %d
   }
 }
 `, providerName, clusterName, tdName, svcName, weight, base)
@@ -465,9 +465,9 @@ resource "aws_ecs_task_set" "mongo" {
 func testAccAWSEcsTaskSetWithMultipleCapacityProviderStrategies(clusterName, tdName, svcName, sgName string) string {
 	return testAccAWSEcsClusterCapacityProviders(clusterName) + fmt.Sprintf(`
 resource "aws_ecs_service" "mongo" {
-  name                  = "%s"
-  cluster               = "${aws_ecs_cluster.test.id}"
-  desired_count         = 1
+  name          = "%s"
+  cluster       = "${aws_ecs_cluster.default.id}"
+  desired_count = 1
   deployment_controller {
     type = "EXTERNAL"
   }
@@ -496,7 +496,7 @@ resource "aws_ecs_task_definition" "mongo" {
   requires_compatibilities = ["FARGATE"]
   cpu                      = "256"
   memory                   = "512"
-  container_definitions = <<DEFINITION
+  container_definitions    = <<DEFINITION
 [
   {
     "cpu": 256,
@@ -521,8 +521,8 @@ resource "aws_security_group" "allow_all" {
   }
 }
 resource "aws_subnet" "main" {
-  cidr_block        = "${cidrsubnet(aws_vpc.main.cidr_block, 8, 1)}"
-  vpc_id            = "${aws_vpc.main.id}"
+  cidr_block = "${cidrsubnet(aws_vpc.main.cidr_block, 8, 1)}"
+  vpc_id     = "${aws_vpc.main.id}"
   tags = {
     Name = "tf-acc-ecs-service-with-multiple-capacity-providers"
   }
