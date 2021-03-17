@@ -108,6 +108,7 @@ var mapServiceNames = []string{
 	"amplify",
 	"apigateway",
 	"apigatewayv2",
+	"appconfig",
 	"appstream",
 	"appsync",
 	"backup",
