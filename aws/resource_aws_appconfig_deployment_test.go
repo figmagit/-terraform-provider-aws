@@ -124,7 +124,9 @@ func testAccCheckAppConfigDeploymentDestroy(s *terraform.State) error {
 		}
 
 		currentState := aws.StringValue(output.State)
-		if currentState == appconfig.DeploymentStateRolledBack || currentState == appconfig.DeploymentStateRollingBack {
+		if currentState == appconfig.DeploymentStateRolledBack ||
+			currentState == appconfig.DeploymentStateRollingBack ||
+			currentState == appconfig.DeploymentStateComplete {
 			return nil
 		}
 
