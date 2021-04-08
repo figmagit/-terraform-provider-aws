@@ -204,7 +204,9 @@ func resourceAwsAppconfigDeploymentDelete(d *schema.ResourceData, meta interface
 		return nil
 	}
 
-	if isAWSErr(err, appconfig.ErrCodeBadRequestException, "it has a status of ROLLED_BACK") {
+	if isAWSErr(err, appconfig.ErrCodeBadRequestException, "it has a status of ROLLED_BACK") ||
+		isAWSErr(err, appconfig.ErrCodeBadRequestException, "it has a status of ROLLING_BACK") ||
+		isAWSErr(err, appconfig.ErrCodeBadRequestException, "it has a status of COMPLETE") {
 		return nil
 	}
 
