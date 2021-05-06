@@ -11,18 +11,17 @@ require (
 	github.com/hashicorp/aws-sdk-go-base v0.7.0
 	github.com/hashicorp/go-cleanhttp v0.5.2
 	github.com/hashicorp/go-cty v1.4.1-0.20200414143053-d3edf31b6320
+	github.com/hashicorp/go-getter v1.5.2 // indirect
 	github.com/hashicorp/go-multierror v1.1.0
 	github.com/hashicorp/go-uuid v1.0.2 // indirect
 	github.com/hashicorp/go-version v1.2.1
 	github.com/hashicorp/terraform-exec v0.13.0 // indirect
-	github.com/hashicorp/terraform-plugin-sdk v1.16.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.4.1
-	github.com/hashicorp/terraform-plugin-test/v2 v2.1.3 // indirect
 	github.com/jen20/awspolicyequivalence v1.1.0
 	github.com/keybase/go-crypto v0.0.0-20161004153544-93f5b35093ba
 	github.com/klauspost/compress v1.11.9 // indirect
 	github.com/mattn/go-colorable v0.1.7 // indirect
-	github.com/mitchellh/copystructure v1.0.0
+	github.com/mitchellh/copystructure v1.2.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mitchellh/go-testing-interface v1.14.1
 	github.com/pquerna/otp v1.3.0
