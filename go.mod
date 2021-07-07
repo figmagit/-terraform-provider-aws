@@ -5,7 +5,7 @@ go 1.16
 require (
 	cloud.google.com/go v0.78.0 // indirect
 	cloud.google.com/go/storage v1.14.0 // indirect
-	github.com/aws/aws-sdk-go v1.38.59
+	github.com/aws/aws-sdk-go v1.39.1
 	github.com/beevik/etree v1.1.0
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/hashicorp/aws-sdk-go-base v0.7.1
@@ -14,9 +14,7 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/go-uuid v1.0.2 // indirect
 	github.com/hashicorp/go-version v1.3.0
-	github.com/hashicorp/terraform-plugin-sdk v1.16.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.6.1
-	github.com/hashicorp/terraform-plugin-test/v2 v2.1.3 // indirect
 	github.com/jen20/awspolicyequivalence v1.1.0
 	github.com/keybase/go-crypto v0.0.0-20161004153544-93f5b35093ba
 	github.com/klauspost/compress v1.11.9 // indirect
