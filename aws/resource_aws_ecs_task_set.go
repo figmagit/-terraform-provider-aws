@@ -1,4 +1,4 @@
-package ecs
+package aws
 
 import (
 	"fmt"
@@ -11,14 +11,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/terraform-providers/terraform-provider-aws/aws/internal/keyvaluetags"
 )
 
-func ResourceTaskSet() *schema.Resource {
+func resourceAwsEcsTaskSet() *schema.Resource {
 	return &schema.Resource{
-		Create: ResourceTaskSetCreate,
-		Read:   ResourceTaskSetRead,
-		Update: ResourceTaskSetUpdate,
-		Delete: ResourceTaskSetDelete,
+		Create: resourceAwsEcsTaskSetCreate,
+		Read:   resourceAwsEcsTaskSetRead,
+		Update: resourceAwsEcsTaskSetUpdate,
+		Delete: resourceAwsEcsTaskSetDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -71,7 +72,7 @@ func ResourceTaskSet() *schema.Resource {
 							Type:     schema.TypeSet,
 							MaxItems: 5,
 							Optional: true,
-              ForceNew: true,
+							ForceNew: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
 							Set:      schema.HashString,
 						},
@@ -79,7 +80,7 @@ func ResourceTaskSet() *schema.Resource {
 							Type:     schema.TypeSet,
 							MaxItems: 16,
 							Required: true,
-              ForceNew: true,
+							ForceNew: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
 							Set:      schema.HashString,
 						},
@@ -87,7 +88,7 @@ func ResourceTaskSet() *schema.Resource {
 							Type:     schema.TypeBool,
 							Optional: true,
 							Default:  false,
-              ForceNew: true,
+							ForceNew: true,
 						},
 					},
 				},
@@ -264,7 +265,7 @@ func ResourceTaskSet() *schema.Resource {
 	}
 }
 
-func ResourceTaskSetCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceAwsEcsTaskSetCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*AWSClient).ecsconn
 
 	cluster := d.Get("cluster").(string)
@@ -274,7 +275,7 @@ func ResourceTaskSetCreate(d *schema.ResourceData, meta interface{}) error {
 		Cluster:        aws.String(cluster),
 		Service:        aws.String(service),
 		TaskDefinition: aws.String(d.Get("task_definition").(string)),
-		Tags:           KeyValueTags.New(d.Get("tags").(map[string]interface{})).IgnoreAws().EcsTags(),
+		Tags:           keyvaluetags.New(d.Get("tags").(map[string]interface{})).IgnoreAws().EcsTags(),
 	}
 
 	if v, ok := d.GetOk("external_id"); ok {
@@ -381,10 +382,10 @@ func ResourceTaskSetCreate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	return ResourceTaskSetRead(d, meta)
+	return resourceAwsEcsTaskSetRead(d, meta)
 }
 
-func ResourceTaskSetRead(d *schema.ResourceData, meta interface{}) error {
+func resourceAwsEcsTaskSetRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*AWSClient).ecsconn
 
 	log.Printf("[DEBUG] Reading ECS task set %s", d.Id())
@@ -501,7 +502,7 @@ func ResourceTaskSetRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func ResourceTaskSetUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceAwsEcsTaskSetUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*AWSClient).ecsconn
 	updateTaskset := false
 
@@ -583,10 +584,10 @@ func ResourceTaskSetUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	}
 
-	return ResourceTaskSetRead(d, meta)
+	return resourceAwsEcsTaskSetRead(d, meta)
 }
 
-func ResourceTaskSetDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceAwsEcsTaskSetDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*AWSClient).ecsconn
 
 	// Check if it's not already gone
