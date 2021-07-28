@@ -58,7 +58,8 @@ func ResourceListenerRule() *schema.Resource {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Computed:     true,
-				ForceNew:     true,
+				// ForceNew: true is not needed as this provider does use SetRulePriorities for updates
+				// https://github.com/hashicorp/terraform-provider-aws/pull/9848
 				ValidateFunc: validListenerRulePriority,
 			},
 			"action": {
