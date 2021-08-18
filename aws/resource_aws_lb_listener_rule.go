@@ -659,7 +659,10 @@ func resourceAwsLbListenerRuleRead(d *schema.ResourceData, meta interface{}) err
 				//             even if enabled=false and the value will be unused. So if enabled is false,
 				//             we set duration=1 in order to avoid this validation error
 				if !actionMap["forward"]["stickiness"]["enabled"] {
-					actionMap["forward"]["stickiness"]["duration"] = 1
+					actionMap["forward"]["stickiness"] = []map[string]interface{}{
+						"enabled":  false,
+						"duration": 1,
+					}
 				}
 			}
 
