@@ -648,8 +648,9 @@ func resourceAwsLbListenerRuleRead(d *schema.ResourceData, meta interface{}) err
 				//             even if enabled=false and the value will be unused. So if enabled is false,
 				//             we set duration=1 in order to avoid this validation error
 				stickinessDuration := aws.Int64Value(action.ForwardConfig.TargetGroupStickinessConfig.DurationSeconds)
-				if !action.ForwardConfig.TargetGroupStickinessConfig.Enabled {
-					stickinessDuration = aws.Int64Value(1)
+				if !*action.ForwardConfig.TargetGroupStickinessConfig.Enabled {
+          one := int64(1)
+					stickinessDuration = aws.Int64Value(&one)
 				}
 
 				actionMap["forward"] = []map[string]interface{}{
