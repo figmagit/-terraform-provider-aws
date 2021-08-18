@@ -655,6 +655,12 @@ func resourceAwsLbListenerRuleRead(d *schema.ResourceData, meta interface{}) err
 						},
 					},
 				}
+				// FIGMA EDIT: Setting duration=0 causes a validation error from the AWS API
+				//             even if enabled=false and the value will be unused. So if enabled is false,
+				//             we set duration=1 in order to avoid this validation error
+				if !actionMap["forward"]["stickiness"]["enabled"] {
+					actionMap["forward"]["stickiness"]["duration"] = 1
+				}
 			}
 
 		case elbv2.ActionTypeEnumRedirect:
