@@ -1050,9 +1050,17 @@ func flattenLbListenerActionForwardConfigTargetGroupStickinessConfig(config *elb
 		return []interface{}{}
 	}
 
+	// FIGMA EDIT: Setting duration=0 causes a validation error from the AWS API
+	//             even if enabled=false and the value will be unused. So if enabled is false,
+	//             we set duration=1 in order to avoid this validation error
+	stickinessDuration := aws.Int64Value(config.DurationSeconds)
+	if !*config.Enabled {
+		one := int64(1)
+		stickinessDuration = aws.Int64Value(&one)
+	}
 	m := map[string]interface{}{
 		"enabled":  aws.BoolValue(config.Enabled),
-		"duration": aws.Int64Value(config.DurationSeconds),
+		"duration": stickinessDuration,
 	}
 
 	return []interface{}{m}
