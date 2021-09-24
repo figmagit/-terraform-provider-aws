@@ -265,6 +265,42 @@ func resourceAwsAppconfigConfigurationProfileDelete(d *schema.ResourceData, meta
 		return err
 	}
 
+	// It is required for us to delete all of the Hosted Configuration Versions before deleting the Configuration Profile
+	// At Figma, we don't track all of the created Hosted Configuration Versions, so need a method outside our terraform 
+	// configs to perform this operation
+	nextToken := aws.String("1")
+
+	for {
+		cvInput := &appconfig.ListHostedConfigurationVersionsInput{
+			ApplicationId:          aws.String(appID),
+			ConfigurationProfileId: aws.String(confProfID),
+			nextToken: nextToken,
+		}
+		cvOutput, err := conn.ListHostedConfigurationVersions(cvInput)
+
+		if err != nil {
+			return err
+		}	
+
+		for _, confVersion := range cvOutput.Items {
+			deleteCVInput := &appconfig.DeleteConfigurationProfileInput{
+				ApplicationId: aws.String(appID),
+				ConfigurationProfileId: aws.String(confProfID),
+				VersionNumber: confVersion.VersionNumber
+			}
+			_, err := conn.DeleteHostedConfigurationVersion(deleteCVInput)
+			if (err != nil) {
+				return err
+			}
+		}
+
+		if (cvOutput.NextToken == nil) {
+			break
+		}
+
+		nextToken = cvOutput.NextToken
+	}
+
 	input := &appconfig.DeleteConfigurationProfileInput{
 		ApplicationId:          aws.String(appID),
 		ConfigurationProfileId: aws.String(confProfID),
