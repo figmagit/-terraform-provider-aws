@@ -17,7 +17,7 @@ See [ECS Services section in AWS developer guide](https://docs.aws.amazon.com/Am
 ## Example Usage
 
 ```terraform
-resource "aws_ecs_service" "mongo" {
+resource "aws_ecs_task_set" "mongo" {
   name            = "mongodb"
   cluster         = aws_ecs_cluster.foo.id
   task_definition = aws_ecs_task_definition.mongo.arn
@@ -48,7 +48,7 @@ resource "aws_ecs_service" "mongo" {
 You can utilize the generic Terraform resource [lifecycle configuration block](https://www.terraform.io/docs/configuration/meta-arguments/lifecycle.html) with `ignore_changes` to create an ECS service with an initial count of running instances, then ignore any changes to that count caused externally (e.g., Application Autoscaling).
 
 ```terraform
-resource "aws_ecs_service" "example" {
+resource "aws_ecs_task_set" "example" {
   # ... other configurations ...
 
   # Example: Create service with 2 instances to start
@@ -64,7 +64,7 @@ resource "aws_ecs_service" "example" {
 ### Daemon Scheduling Strategy
 
 ```terraform
-resource "aws_ecs_service" "bar" {
+resource "aws_ecs_task_set" "bar" {
   name                = "bar"
   cluster             = aws_ecs_cluster.foo.id
   task_definition     = aws_ecs_task_definition.bar.arn
@@ -75,7 +75,7 @@ resource "aws_ecs_service" "bar" {
 ### External Deployment Controller
 
 ```terraform
-resource "aws_ecs_service" "example" {
+resource "aws_ecs_task_set" "example" {
   name    = "example"
   cluster = aws_ecs_cluster.example.id
 
@@ -201,7 +201,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Timeouts
 
-`aws_ecs_service` provides the following [Timeouts](https://www.terraform.io/docs/configuration/blocks/resources/syntax.html#operation-timeouts) configuration options:
+`aws_ecs_task_set` provides the following [Timeouts](https://www.terraform.io/docs/configuration/blocks/resources/syntax.html#operation-timeouts) configuration options:
 
 - `delete` - (Default `20 minutes`)
 
@@ -210,6 +210,6 @@ In addition to all arguments above, the following attributes are exported:
 ECS services can be imported using the `name` together with ecs cluster `name`, e.g.,
 
 ```
-$ terraform import aws_ecs_service.imported cluster-name/service-name
+$ terraform import aws_ecs_task_set.imported cluster-name/service-name
 ```
 
