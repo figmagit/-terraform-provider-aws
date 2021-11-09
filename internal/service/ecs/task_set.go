@@ -8,9 +8,14 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ecs"
+	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/hashicorp/terraform-provider-aws/internal/conns"
+	tftags "github.com/hashicorp/terraform-provider-aws/internal/tags"
+	"github.com/hashicorp/terraform-provider-aws/internal/tfresource"
+	"github.com/hashicorp/terraform-provider-aws/internal/verify"
 )
 
 func ResourceTaskSet() *schema.Resource {
@@ -71,7 +76,7 @@ func ResourceTaskSet() *schema.Resource {
 							Type:     schema.TypeSet,
 							MaxItems: 5,
 							Optional: true,
-              ForceNew: true,
+							ForceNew: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
 							Set:      schema.HashString,
 						},
@@ -79,7 +84,7 @@ func ResourceTaskSet() *schema.Resource {
 							Type:     schema.TypeSet,
 							MaxItems: 16,
 							Required: true,
-              ForceNew: true,
+							ForceNew: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
 							Set:      schema.HashString,
 						},
@@ -87,7 +92,7 @@ func ResourceTaskSet() *schema.Resource {
 							Type:     schema.TypeBool,
 							Optional: true,
 							Default:  false,
-              ForceNew: true,
+							ForceNew: true,
 						},
 					},
 				},
@@ -112,7 +117,7 @@ func ResourceTaskSet() *schema.Resource {
 							Type:         schema.TypeString,
 							Optional:     true,
 							ForceNew:     true,
-							ValidateFunc: validateArn,
+							ValidateFunc: verify.ValidARN,
 						},
 						"container_name": {
 							Type:     schema.TypeString,
@@ -153,7 +158,7 @@ func ResourceTaskSet() *schema.Resource {
 						"registry_arn": {
 							Type:         schema.TypeString,
 							Optional:     true,
-							ValidateFunc: validateArn,
+							ValidateFunc: verify.ValidARN,
 						},
 					},
 				},
@@ -259,13 +264,13 @@ func ResourceTaskSet() *schema.Resource {
 				},
 			},
 
-			"tags": tagsSchema(),
+			"tags": tftags.TagsSchema(),
 		},
 	}
 }
 
 func ResourceTaskSetCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*AWSClient).ecsconn
+	conn := meta.(*conns.AWSClient).ECSConn
 
 	cluster := d.Get("cluster").(string)
 	service := d.Get("service").(string)
@@ -274,7 +279,7 @@ func ResourceTaskSetCreate(d *schema.ResourceData, meta interface{}) error {
 		Cluster:        aws.String(cluster),
 		Service:        aws.String(service),
 		TaskDefinition: aws.String(d.Get("task_definition").(string)),
-		Tags:           KeyValueTags.New(d.Get("tags").(map[string]interface{})).IgnoreAws().EcsTags(),
+		Tags:           Tags(tftags.New(d.Get("tags").(map[string]interface{})).IgnoreAWS()),
 	}
 
 	if v, ok := d.GetOk("external_id"); ok {
@@ -287,7 +292,7 @@ func ResourceTaskSetCreate(d *schema.ResourceData, meta interface{}) error {
 
 	input.CapacityProviderStrategy = expandEcsCapacityProviderStrategy(d.Get("capacity_provider_strategy").(*schema.Set))
 
-	loadBalancers := expandEcsLoadBalancers(d.Get("load_balancers").([]interface{}))
+	loadBalancers := expandLoadBalancers(d.Get("load_balancers").([]interface{}))
 	if len(loadBalancers) > 0 {
 		log.Printf("[DEBUG] Adding ECS load balancers: %s", loadBalancers)
 		input.LoadBalancers = loadBalancers
@@ -318,10 +323,10 @@ func ResourceTaskSetCreate(d *schema.ResourceData, meta interface{}) error {
 		out, err = conn.CreateTaskSet(&input)
 
 		if err != nil {
-			if isAWSErr(err, ecs.ErrCodeClusterNotFoundException, "") ||
-				isAWSErr(err, ecs.ErrCodeServiceNotFoundException, "") ||
-				isAWSErr(err, ecs.ErrCodeTaskSetNotFoundException, "") ||
-				isAWSErr(err, ecs.ErrCodeInvalidParameterException, "does not have an associated load balancer") {
+			if tfawserr.ErrCodeEquals(err, ecs.ErrCodeClusterNotFoundException) ||
+				tfawserr.ErrCodeEquals(err, ecs.ErrCodeServiceNotFoundException) ||
+				tfawserr.ErrCodeEquals(err, ecs.ErrCodeTaskSetNotFoundException) ||
+				tfawserr.ErrMessageContains(err, ecs.ErrCodeInvalidParameterException, "does not have an associated load balancer") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -330,7 +335,7 @@ func ResourceTaskSetCreate(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	})
 
-	if isResourceTimeoutError(err) {
+	if tfresource.TimedOut(err) {
 		out, err = conn.CreateTaskSet(&input)
 	}
 
@@ -385,7 +390,7 @@ func ResourceTaskSetCreate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func ResourceTaskSetRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*AWSClient).ecsconn
+	conn := meta.(*conns.AWSClient).ECSConn
 
 	log.Printf("[DEBUG] Reading ECS task set %s", d.Id())
 
@@ -403,9 +408,9 @@ func ResourceTaskSetRead(d *schema.ResourceData, meta interface{}) error {
 		out, err = conn.DescribeTaskSets(&input)
 		if err != nil {
 			if d.IsNewResource() &&
-				isAWSErr(err, ecs.ErrCodeServiceNotFoundException, "") ||
-				isAWSErr(err, ecs.ErrCodeClusterNotFoundException, "") ||
-				isAWSErr(err, ecs.ErrCodeTaskSetNotFoundException, "") {
+				tfawserr.ErrCodeEquals(err, ecs.ErrCodeServiceNotFoundException) ||
+				tfawserr.ErrCodeEquals(err, ecs.ErrCodeClusterNotFoundException) ||
+				tfawserr.ErrCodeEquals(err, ecs.ErrCodeTaskSetNotFoundException) {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -423,15 +428,15 @@ func ResourceTaskSetRead(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	})
 
-	if isResourceTimeoutError(err) {
+	if tfresource.TimedOut(err) {
 		out, err = conn.DescribeTaskSets(&input)
 	}
 
 	// after retrying
 	if err != nil {
-		if isAWSErr(err, ecs.ErrCodeClusterNotFoundException, "") ||
-			isAWSErr(err, ecs.ErrCodeServiceNotFoundException, "") ||
-			isAWSErr(err, ecs.ErrCodeTaskSetNotFoundException, "") {
+		if tfawserr.ErrCodeEquals(err, ecs.ErrCodeClusterNotFoundException) ||
+			tfawserr.ErrCodeEquals(err, ecs.ErrCodeServiceNotFoundException) ||
+			tfawserr.ErrCodeEquals(err, ecs.ErrCodeTaskSetNotFoundException) {
 			log.Printf("[WARN] ECS TaskSet (%s) not found, removing from state", d.Id())
 			d.SetId("")
 			return nil
@@ -463,7 +468,7 @@ func ResourceTaskSetRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("external_id", taskSet.ExternalId)
 
 	// Save cluster in the same format
-	if strings.HasPrefix(d.Get("cluster").(string), "arn:"+meta.(*AWSClient).partition+":ecs:") {
+	if strings.HasPrefix(d.Get("cluster").(string), "arn:"+meta.(*conns.AWSClient).Partition+":ecs:") {
 		d.Set("cluster", taskSet.ClusterArn)
 	} else {
 		clusterARN := getNameFromARN(*taskSet.ClusterArn)
@@ -471,7 +476,7 @@ func ResourceTaskSetRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	// Save task definition in the same format
-	if strings.HasPrefix(d.Get("task_definition").(string), "arn:"+meta.(*AWSClient).partition+":ecs:") {
+	if strings.HasPrefix(d.Get("task_definition").(string), "arn:"+meta.(*conns.AWSClient).Partition+":ecs:") {
 		d.Set("task_definition", taskSet.TaskDefinition)
 	} else {
 		taskDefinition := buildFamilyAndRevisionFromARN(*taskSet.TaskDefinition)
@@ -479,7 +484,7 @@ func ResourceTaskSetRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if taskSet.LoadBalancers != nil {
-		d.Set("load_balancers", flattenEcsLoadBalancers(taskSet.LoadBalancers))
+		d.Set("load_balancers", flattenECSLoadBalancers(taskSet.LoadBalancers))
 	}
 
 	if err := d.Set("scale", flattenAwsEcsScale(taskSet.Scale)); err != nil {
@@ -502,7 +507,7 @@ func ResourceTaskSetRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func ResourceTaskSetUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*AWSClient).ecsconn
+	conn := meta.(*conns.AWSClient).ECSConn
 	updateTaskset := false
 
 	input := ecs.UpdateTaskSetInput{
@@ -525,10 +530,10 @@ func ResourceTaskSetUpdate(d *schema.ResourceData, meta interface{}) error {
 		err := resource.Retry(d.Timeout(schema.TimeoutUpdate), func() *resource.RetryError {
 			_, err := conn.UpdateTaskSet(&input)
 			if err != nil {
-				if isAWSErr(err, ecs.ErrCodeClusterNotFoundException, "") ||
-					isAWSErr(err, ecs.ErrCodeServiceNotFoundException, "") ||
-					isAWSErr(err, ecs.ErrCodeTaskSetNotFoundException, "") ||
-					isAWSErr(err, ecs.ErrCodeInvalidParameterException, "does not have an associated load balancer") {
+				if tfawserr.ErrCodeEquals(err, ecs.ErrCodeClusterNotFoundException) ||
+					tfawserr.ErrCodeEquals(err, ecs.ErrCodeServiceNotFoundException) ||
+					tfawserr.ErrCodeEquals(err, ecs.ErrCodeTaskSetNotFoundException) ||
+					tfawserr.ErrMessageContains(err, ecs.ErrCodeInvalidParameterException, "does not have an associated load balancer") {
 					return resource.RetryableError(err)
 				}
 				return resource.NonRetryableError(err)
@@ -536,7 +541,7 @@ func ResourceTaskSetUpdate(d *schema.ResourceData, meta interface{}) error {
 			return nil
 		})
 
-		if isResourceTimeoutError(err) {
+		if tfresource.TimedOut(err) {
 			_, err = conn.UpdateTaskSet(&input)
 		}
 		if err != nil {
@@ -587,7 +592,7 @@ func ResourceTaskSetUpdate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func ResourceTaskSetDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*AWSClient).ecsconn
+	conn := meta.(*conns.AWSClient).ECSConn
 
 	// Check if it's not already gone
 	resp, err := conn.DescribeTaskSets(&ecs.DescribeTaskSetsInput{
@@ -597,7 +602,7 @@ func ResourceTaskSetDelete(d *schema.ResourceData, meta interface{}) error {
 	})
 
 	if err != nil {
-		if isAWSErr(err, ecs.ErrCodeTaskSetNotFoundException, "") {
+		if tfawserr.ErrCodeEquals(err, ecs.ErrCodeTaskSetNotFoundException) {
 			log.Printf("[DEBUG] Removing ECS Task set from state, %q is already gone", d.Id())
 			return nil
 		}
@@ -626,10 +631,10 @@ func ResourceTaskSetDelete(d *schema.ResourceData, meta interface{}) error {
 		log.Printf("[DEBUG] Trying to delete ECS task set %s", input)
 		_, err := conn.DeleteTaskSet(&input)
 		if err != nil {
-			if isAWSErr(err, ecs.ErrCodeTaskSetNotFoundException, "") {
+			if tfawserr.ErrCodeEquals(err, ecs.ErrCodeTaskSetNotFoundException) {
 				return nil
 			}
-			if isAWSErr(err, ecs.ErrCodeInvalidParameterException, "The service cannot be stopped while deployments are active.") {
+			if tfawserr.ErrMessageContains(err, ecs.ErrCodeInvalidParameterException, "The service cannot be stopped while deployments are active.") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -637,12 +642,12 @@ func ResourceTaskSetDelete(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	})
 
-	if isResourceTimeoutError(err) {
+	if tfresource.TimedOut(err) {
 		_, err = conn.DeleteTaskSet(&input)
 	}
 
 	if err != nil {
-		if isAWSErr(err, ecs.ErrCodeTaskSetNotFoundException, "") {
+		if tfawserr.ErrCodeEquals(err, ecs.ErrCodeTaskSetNotFoundException) {
 			return nil
 		}
 		return fmt.Errorf("Error deleting ECS task set: %s", err)
