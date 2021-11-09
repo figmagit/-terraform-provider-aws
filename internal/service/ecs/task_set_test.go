@@ -16,7 +16,7 @@ import (
 	tfecs "github.com/hashicorp/terraform-provider-aws/internal/service/ecs"
 )
 
-func TestAccEcsTaskSet_basic(t *testing.T) {
+func TestAccECSTaskSet_basic(t *testing.T) {
 	var taskSet ecs.TaskSet
 
 	clusterName := sdkacctest.RandomWithPrefix("tf-acc-cluster")
@@ -42,7 +42,7 @@ func TestAccEcsTaskSet_basic(t *testing.T) {
 	})
 }
 
-func TestAccTaskSet_withARN(t *testing.T) {
+func TestAccECSTaskSet_withARN(t *testing.T) {
 	var taskSet ecs.TaskSet
 
 	clusterName := sdkacctest.RandomWithPrefix("tf-acc-cluster")
@@ -77,7 +77,7 @@ func TestAccTaskSet_withARN(t *testing.T) {
 	})
 }
 
-func TestAccTaskSet_disappears(t *testing.T) {
+func TestAccECSTaskSet_disappears(t *testing.T) {
 	var taskSet ecs.TaskSet
 
 	clusterName := sdkacctest.RandomWithPrefix("tf-acc-cluster")
@@ -102,7 +102,7 @@ func TestAccTaskSet_disappears(t *testing.T) {
 	})
 }
 
-func TestAccTaskSet_scale(t *testing.T) {
+func TestAccECSTaskSet_scale(t *testing.T) {
 	var taskSet ecs.TaskSet
 
 	clusterName := sdkacctest.RandomWithPrefix("tf-acc-cluster")
@@ -135,7 +135,7 @@ func TestAccTaskSet_scale(t *testing.T) {
 	})
 }
 
-func TestAccTaskSet_withCapacityProviderStrategy(t *testing.T) {
+func TestAccECSTaskSet_withCapacityProviderStrategy(t *testing.T) {
 	var taskSet ecs.TaskSet
 
 	clusterName := sdkacctest.RandomWithPrefix("tf-acc-cluster")
@@ -165,7 +165,7 @@ func TestAccTaskSet_withCapacityProviderStrategy(t *testing.T) {
 	})
 }
 
-func TestAccTaskSet_withMultipleCapacityProviderStrategies(t *testing.T) {
+func TestAccECSTaskSet_withMultipleCapacityProviderStrategies(t *testing.T) {
 	var taskSet ecs.TaskSet
 
 	clusterName := sdkacctest.RandomWithPrefix("tf-acc-cluster")
@@ -190,7 +190,7 @@ func TestAccTaskSet_withMultipleCapacityProviderStrategies(t *testing.T) {
 	})
 }
 
-func TestAccTaskSet_withAlb(t *testing.T) {
+func TestAccECSTaskSet_withAlb(t *testing.T) {
 	var taskSet ecs.TaskSet
 
 	clusterName := sdkacctest.RandomWithPrefix("tf-acc-cluster")
@@ -215,7 +215,7 @@ func TestAccTaskSet_withAlb(t *testing.T) {
 	})
 }
 
-func TestAccTaskSet_withLaunchTypeFargate(t *testing.T) {
+func TestAccECSTaskSet_withLaunchTypeFargate(t *testing.T) {
 	var taskSet ecs.TaskSet
 
 	sg1Name := sdkacctest.RandomWithPrefix("tf-acc-sg-1")
@@ -245,7 +245,7 @@ func TestAccTaskSet_withLaunchTypeFargate(t *testing.T) {
 	})
 }
 
-func TestAccTaskSet_withLaunchTypeFargateAndPlatformVersion(t *testing.T) {
+func TestAccECSTaskSet_withLaunchTypeFargateAndPlatformVersion(t *testing.T) {
 	var taskSet ecs.TaskSet
 
 	sg1Name := sdkacctest.RandomWithPrefix("tf-acc-sg-1")
@@ -278,7 +278,7 @@ func TestAccTaskSet_withLaunchTypeFargateAndPlatformVersion(t *testing.T) {
 	})
 }
 
-func TestAccTaskSet_withServiceRegistries(t *testing.T) {
+func TestAccECSTaskSet_withServiceRegistries(t *testing.T) {
 	var taskSet ecs.TaskSet
 	rString := sdkacctest.RandString(8)
 
@@ -303,7 +303,7 @@ func TestAccTaskSet_withServiceRegistries(t *testing.T) {
 	})
 }
 
-func TestAccTaskSet_Tags(t *testing.T) {
+func TestAccECSTaskSet_Tags(t *testing.T) {
 	var taskSet ecs.TaskSet
 	rName := sdkacctest.RandomWithPrefix("tf-acc-test")
 	resourceName := "aws_ecs_task_set.test"
