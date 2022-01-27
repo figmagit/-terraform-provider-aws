@@ -168,8 +168,8 @@ github.com/google/uuid v1.1.2/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+
 github.com/googleapis/gax-go/v2 v2.0.4/go.mod h1:0Wqv26UfaUD9n4G6kQubkQ+KchISgw+vpHVxEJEs9eg=
 github.com/googleapis/gax-go/v2 v2.0.5 h1:sjZBwGj9Jlw33ImPtvFviGYvseOtDM7hkSKB7+Tv3SM=
 github.com/googleapis/gax-go/v2 v2.0.5/go.mod h1:DWXyrwAJ9X0FpwwEdw+IPEYBICEFu5mhpdKc/us6bOk=
-github.com/hashicorp/aws-cloudformation-resource-schema-sdk-go v0.14.0 h1:2Usl5CuFvGhAXocHfEbEtirux3Bd60nt1ewBY70+NRI=
-github.com/hashicorp/aws-cloudformation-resource-schema-sdk-go v0.14.0/go.mod h1:C6GVuO9RWOrt6QCGTmLCOYuSHpkfQSBDuRqTteOlo0g=
+github.com/hashicorp/aws-cloudformation-resource-schema-sdk-go v0.15.0 h1:n/ICe8cTnmPQfvn2bupsrubnwIEXcHLrE18RUAdVcgY=
+github.com/hashicorp/aws-cloudformation-resource-schema-sdk-go v0.15.0/go.mod h1:C6GVuO9RWOrt6QCGTmLCOYuSHpkfQSBDuRqTteOlo0g=
 github.com/hashicorp/aws-sdk-go-base v1.0.0 h1:J7MMLOfSoDWkusy+cSzKYG1/aFyCzYJmdE0mod3/WLw=
 github.com/hashicorp/aws-sdk-go-base v1.0.0/go.mod h1:2fRjWDv3jJBeN6mVWFHV6hFTNeFBx2gpDLQaZNxUVAY=
 github.com/hashicorp/errwrap v1.0.0 h1:hLrqtEDnRye3+sgx6z4qVLNuviH3MR5aQ0ykNJa/UYA=
@@ -326,7 +326,6 @@ github.com/stretchr/testify v1.5.1/go.mod h1:5W2xD1RspED5o8YsWQXVCued0rvSQ+mT+I5
 github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5CcY=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
-github.com/terraform-providers/terraform-provider-aws v1.60.0 h1:uJw42EpO/1L8tk5P8hpio0mN9+hIdq8ubteidQjfk7Q=
 github.com/ulikunitz/xz v0.5.8 h1:ERv8V6GKqVi23rgu5cj9pVfVzJbOqAY2Ntl88O6c2nQ=
 github.com/ulikunitz/xz v0.5.8/go.mod h1:nbz6k7qbPmH4IRqmfOplQw/tblSgqTqBwxkY0oWt/14=
 github.com/vmihailenco/msgpack v3.3.3+incompatible/go.mod h1:fy3FlTQTDXWkZ7Bh6AcGMlsjHatGryHQYUTf1ShIgkk=
