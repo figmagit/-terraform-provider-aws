@@ -76,6 +76,7 @@ import (
 	"github.com/hashicorp/terraform-provider-aws/internal/service/elbv2"
 	"github.com/hashicorp/terraform-provider-aws/internal/service/emr"
 	"github.com/hashicorp/terraform-provider-aws/internal/service/events"
+	"github.com/hashicorp/terraform-provider-aws/internal/service/figma"
 	"github.com/hashicorp/terraform-provider-aws/internal/service/firehose"
 	"github.com/hashicorp/terraform-provider-aws/internal/service/fms"
 	"github.com/hashicorp/terraform-provider-aws/internal/service/fsx"
@@ -1800,6 +1801,10 @@ func Provider() *schema.Provider {
 			"aws_xray_encryption_config": xray.ResourceEncryptionConfig(),
 			"aws_xray_group":             xray.ResourceGroup(),
 			"aws_xray_sampling_rule":     xray.ResourceSamplingRule(),
+
+			// Ideally this does not have the aws_ prefix, but terraform
+			// enforces the name prefix.
+			"aws_figma_prevent_destroy": figma.ResourcePreventDestroy(),
 		},
 	}
 
