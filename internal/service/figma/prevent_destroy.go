@@ -1,4 +1,5 @@
 package figma
+// This is explained in figma/figma/config/terraform/modules/asserts/prevent-destroy/main.tf
 
 import (
 	"fmt"
