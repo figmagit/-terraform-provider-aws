@@ -16,7 +16,7 @@
 - Mailing List: [Google Groups](http://groups.google.com/group/terraform-tool)
 
 The Terraform AWS provider is a plugin for Terraform that allows for the full lifecycle management of AWS resources.
-This provider is maintained internally by the HashiCorp AWS Provider team.
+This provider is maintained internally by the Stub AWS Provider team.
 
 Please note: We take Terraform's security and our users' trust very seriously. If you believe you have found a security issue in the Terraform AWS Provider, please responsibly disclose by contacting us at security@hashicorp.com.
 
