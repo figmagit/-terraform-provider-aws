@@ -26,12 +26,7 @@ func ResourcePreventDestroy() *schema.Resource {
 			Update: schema.DefaultTimeout(1 * time.Minute),
 		},
 
-		Schema: map[string]*schema.Schema{
-			"prevent_targets": {
-				Type:     schema.TypeMap,
-        Required: true,
-			},
-		},
+		Schema: map[string]*schema.Schema{},
 	}
 }
 
