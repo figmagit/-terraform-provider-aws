@@ -1,10 +1,12 @@
 package figma
 
 import (
+  "strconv"
 	"fmt"
 	"log"
 	"time"
   "os"
+  "math/rand"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -13,8 +15,9 @@ func ResourcePreventDestroy() *schema.Resource {
 	return &schema.Resource{
 		Create: ResourcePreventDestroyCreate,
 		Read:   ResourcePreventDestroyRead,
-		Update: ResourcePreventDestroyUpdate,
 		Delete: ResourcePreventDestroyDelete,
+    // Update: Not needed or allowed because there are no callsite
+    // controllable parameters
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -23,22 +26,23 @@ func ResourcePreventDestroy() *schema.Resource {
 			Create: schema.DefaultTimeout(1 * time.Minute),
 			Read:   schema.DefaultTimeout(1 * time.Minute),
 			Delete: schema.DefaultTimeout(1 * time.Minute),
-			Update: schema.DefaultTimeout(1 * time.Minute),
 		},
 
-		Schema: map[string]*schema.Schema{},
+		Schema: map[string]*schema.Schema{
+      "id": {
+				Type:     schema.TypeString,
+        Computed: true,
+      },
+    },
 	}
 }
 
 func ResourcePreventDestroyCreate(d *schema.ResourceData, meta interface{}) error {
-  return nil
+  d.SetId(strconv.Itoa(rand.Int()))
+	return ResourcePreventDestroyRead(d, meta)
 }
 
 func ResourcePreventDestroyRead(d *schema.ResourceData, meta interface{}) error {
-  return nil
-}
-
-func ResourcePreventDestroyUpdate(d *schema.ResourceData, meta interface{}) error {
   return nil
 }
 
