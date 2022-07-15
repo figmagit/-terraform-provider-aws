@@ -32,29 +32,13 @@ jobs:
         with:
           go-version: 1.16
       -
+        name: Import GPG key
         id: import_gpg
-        name: GPG key import
-        # 2022-07-14: In this import_gpg step, we started encountering this error.
-        #
-        #   gpg-agent: a gpg-agent is already running - not starting a new one
-        #
-        # It happens even if we take an old commit and rerun goreleaser, so its
-        # likely that the github actions environment added a gpg-agent recently
-        # and broke ghaction-import-gpg.
-        #
-        # Below is the logic lifted from ghaction-import-gpg with the exception
-        # of launching the gpg-agent daemon
-        # https://github.com/hashicorp/ghaction-import-gpg/blob/main/action.yml
-        run: |
-          # import GPG key and prime passphrase
-          echo -e "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --import --batch --no-tty
-          echo "hello world" > temp.txt
-          gpg --detach-sig --yes -v --output=/dev/null --pinentry-mode loopback --passphrase "${{ secrets.PASSPHRASE }}" temp.txt
-          rm temp.txt
-
-          # set gpg fingerprint output
-          fingerprint=$(gpg --with-colons --list-keys | awk -F: '/^pub/ { print $5 }')
-          echo "::set-output name=fingerprint::$fingerprint"
+        uses: crazy-max/ghaction-import-gpg@v5.0.0
+        env:
+          # These secrets will need to be configured for the repository:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          PASSPHRASE: ${{ secrets.PASSPHRASE }}
       -
         name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2.5.0
