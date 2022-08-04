@@ -751,7 +751,7 @@ resource "aws_synthetics_canary" "test" {
   }
 
   run_config {
-    timeout_in_seconds    = 60
+    timeout_in_seconds = 60
     environment_variables = {
       foo = "bar"
     }
