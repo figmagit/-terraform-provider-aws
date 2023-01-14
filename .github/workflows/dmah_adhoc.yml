@@ -2,7 +2,7 @@ name: dmah_adhoc
 on:
   push:
     branches:
-      - main
+      - DavidMah-patch-1
 
 jobs:
   dmah_adhoc:
