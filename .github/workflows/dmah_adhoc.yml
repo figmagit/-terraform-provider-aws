@@ -1,0 +1,15 @@
+name: dmah_adhoc
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  dmah_adhoc:
+    name: dmah_adhoc
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: stub
+      run: |
+        echo 'hello world'
