@@ -11,5 +11,8 @@ jobs:
     
     steps:
     - name: stub
+      env:
+        GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+        DMAH_EXAMPLE_ENV: abc123
       run: |
-        echo 'hello world'
+        echo $(echo '$DMAH_EXAMPLE_ENV' | wc -l)
