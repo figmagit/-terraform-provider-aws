@@ -224,7 +224,7 @@ type Options struct {
 	// from stdin for the MFA token code.
 	//
 	// This field is only used if the shared configuration is enabled, and
-	// the config enables assume role wit MFA via the mfa_serial field.
+	// the config enables assume role with MFA via the mfa_serial field.
 	AssumeRoleTokenProvider func() (string, error)
 
 	// When the SDK's shared config is configured to assume a role this option
@@ -304,6 +304,11 @@ type Options struct {
 	//
 	// AWS_EC2_METADATA_SERVICE_ENDPOINT_MODE=IPv6
 	EC2IMDSEndpointMode endpoints.EC2IMDSEndpointModeState
+
+	// Specifies options for creating credential providers.
+	// These are only used if the aws.Config does not already
+	// include credentials.
+	CredentialsProviderOptions *CredentialsProviderOptions
 }
 
 // NewSessionWithOptions returns a new Session created from SDK defaults, config files,
